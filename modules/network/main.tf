@@ -35,8 +35,8 @@ resource "digitalocean_domain" "purus_domain" {
 resource "digitalocean_firewall" "ssh" {
   name = "ssh-firewall"
 
-  tags = ["mosquitto"]
-  
+  tags = ["ssh"]
+
   inbound_rule {
     protocol         = "tcp"
     port_range       = "22"

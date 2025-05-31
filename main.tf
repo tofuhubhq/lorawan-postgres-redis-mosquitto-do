@@ -168,6 +168,7 @@ module "mosquitto" {
   do_project_id = digitalocean_project.playground.id
   do_ssh_key_name = var.do_ssh_key_name
   do_domain = var.do_domain
+  mosquitto_config_path = "${path.module}/modules/mosquitto/mosquitto.conf"
 }
 
 # module "chirpstack" {

@@ -29,6 +29,11 @@ variable "do_domain" {
   default     = ""
 }
 
+variable "mosquitto_config_path" {
+  description = "Path to the Mosquitto config file"
+  type        = string
+}
+
 variable "private_key_path" {
   description = "Path to your private SSH key"
   type        = string
@@ -38,7 +43,6 @@ variable "do_ssh_key_name" {
   description = "SSH key name"
   type        = string
 }
-
 data "digitalocean_ssh_key" "my_key" {
   name = var.do_ssh_key_name
 }
@@ -55,7 +59,7 @@ resource "digitalocean_droplet" "mosquitto" {
   image  = var.do_mosquitto_image
   ssh_keys = [data.digitalocean_ssh_key.my_key.id]
 
-  tags = ["mosquitto"]
+  tags = ["mosquitto", "ssh"]
 
   connection {
     type        = "ssh"
@@ -63,13 +67,22 @@ resource "digitalocean_droplet" "mosquitto" {
     private_key = file(var.private_key_path)
     host        = self.ipv4_address
   }
-
   provisioner "remote-exec" {
     inline = [
       "apt update -y",
       "apt install -y mosquitto",
       "systemctl enable mosquitto",
       "systemctl start mosquitto"
+    ]
+  }
+  provisioner "file" {
+    source      = var.mosquitto_config_path
+    destination = "/etc/mosquitto/conf.d/mosquitto.conf"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "systemctl restart mosquitto"
     ]
   }
 }
