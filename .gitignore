@@ -1,0 +1,9 @@
+.vars.tf
+
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform/
+.terraform.lock.hcl
+# Local Netlify folder
+.netlify
