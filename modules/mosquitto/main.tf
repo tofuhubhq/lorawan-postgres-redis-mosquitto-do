@@ -71,10 +71,19 @@ resource "digitalocean_droplet" "mosquitto" {
     inline = [
       "apt update -y",
       "apt install -y mosquitto",
+       # Create password file before Mosquitto reads it
+      "mosquitto_passwd -b -c /etc/mosquitto/passwd admin mypassword",
+
+      # Add config file to enforce password auth
+      "echo 'allow_anonymous false' > /etc/mosquitto/conf.d/auth.conf",
+      "echo 'password_file /etc/mosquitto/passwd' >> /etc/mosquitto/conf.d/auth.conf",
       "systemctl enable mosquitto",
       "systemctl start mosquitto"
     ]
   }
+
+  # This file will include address binding, so connections
+  # can be received from anywhere
   provisioner "file" {
     source      = var.mosquitto_config_path
     destination = "/etc/mosquitto/conf.d/mosquitto.conf"
@@ -82,9 +91,10 @@ resource "digitalocean_droplet" "mosquitto" {
 
   provisioner "remote-exec" {
     inline = [
-      "systemctl restart mosquitto"
+      "systemctl restart mosquitto",
     ]
   }
+  
 }
 
 # Assigns the mosquitto droplet to the project
