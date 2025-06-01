@@ -4,6 +4,11 @@ terraform {
       source  = "digitalocean/digitalocean"
       version = "~> 2.0"
     }
+
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.0"
+    }
   }
 }
 
@@ -171,14 +176,20 @@ module "mosquitto" {
   mosquitto_config_path = "${path.module}/modules/mosquitto/mosquitto.conf"
 }
 
-# module "chirpstack" {
-#   source = "./modules/chirpstack"
-#   do_access_token = var.do_access_token
-#   do_chirpstack_droplet_count = var.do_chirpstack_droplet_count
-#   do_chirpstack_droplet_size = var.do_chirpstack_droplet_size
-#   do_chirpstack_droplet_image = var.do_chirpstack_droplet_image
-#   do_chirpstack_droplet_region = var.do_chirpstack_droplet_region
-#   private_key_path = var.private_key_path
-#   do_ssh_key_name = var.do_ssh_key_name
-#   do_project_id = digitalocean_project.playground.id
-# }
+module "chirpstack" {
+  source = "./modules/chirpstack"
+  do_access_token = var.do_access_token
+  do_chirpstack_droplet_count = var.do_chirpstack_droplet_count
+  do_chirpstack_droplet_size = var.do_chirpstack_droplet_size
+  do_chirpstack_droplet_image = var.do_chirpstack_droplet_image
+  do_chirpstack_droplet_region = var.do_chirpstack_droplet_region
+  private_key_path = var.private_key_path
+  do_ssh_key_name = var.do_ssh_key_name
+  do_project_id = digitalocean_project.playground.id
+
+  # These are the variables that are coming from the mosquitto module
+  mosquitto_host     = module.mosquitto.mosquitto_host
+  mosquitto_port     = module.mosquitto.mosquitto_port
+  mosquitto_username = module.mosquitto.mosquitto_username
+  mosquitto_password = module.mosquitto.mosquitto_password
+}

@@ -28,6 +28,26 @@ variable "do_chirpstack_droplet_region" {
   type        = string
 }
 
+variable "mosquitto_host" {
+  description = "Digital ocean access token"
+  type        = string
+}
+
+variable "mosquitto_port" {
+  description = "Digital ocean access token"
+  type        = string
+}
+
+variable "mosquitto_username" {
+  description = "Digital ocean access token"
+  type        = string
+}
+
+variable "mosquitto_password" {
+  description = "Digital ocean access token"
+  type        = string
+}
+
 variable "private_key_path" {
   description = "Path to your private SSH key"
   type        = string
@@ -46,6 +66,13 @@ provider "digitalocean" {
   token = var.do_access_token
 }
 
+resource "local_file" "chirpstack_env" {
+  filename = "${path.module}/tmp/chirpstack.env"
+  content  = <<EOT
+    MQTT_BROKER_HOST=mqtt://${var.mosquitto_username}:${var.mosquitto_password}@${var.mosquitto_host}:${var.mosquitto_port}
+  EOT
+}
+
 resource "digitalocean_droplet" "chirpstack_nodes" {
   count  = var.do_chirpstack_droplet_count
   name   = "chirpstack-node-${count.index + 1}"
@@ -54,7 +81,7 @@ resource "digitalocean_droplet" "chirpstack_nodes" {
   image  = var.do_chirpstack_droplet_image
   ssh_keys = [data.digitalocean_ssh_key.my_key.id]
 
-  tags = ["chirpstack"]
+  tags = ["chirpstack", "ssh"]
 
   connection {
     type        = "ssh"
@@ -63,23 +90,27 @@ resource "digitalocean_droplet" "chirpstack_nodes" {
     host        = self.ipv4_address
   }
 
-  provisioner "remote-exec" {
-    inline = [
-      "apt-get update -y",
-      "apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release git",
-      "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg",
-      "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" > /etc/apt/sources.list.d/docker.list",
-      "apt-get update -y",
-      "apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin",
-
-      # Clone Chirpstack
-      "git clone https://github.com/yebosoftware/chirpstack-docker.git /opt/chirpstack",
-
-      # Start containers
-      "cd /opt/chirpstack",
-      "docker compose up -d"
-    ]
+  # Copy the local file with the credentials to the remote machine
+  provisioner "file" {
+    source = local_file.chirpstack_env.filename
+    destination = "/opt/chirpstack/chirpstack.env"
   }
+  # provisioner "remote-exec" {
+  #   inline = [
+  #     "apt-get update -y",
+  #     "apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release git",
+  #     "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg",
+  #     "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" > /etc/apt/sources.list.d/docker.list",
+  #     "apt-get update -y",
+  #     "apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin",
+
+  #     # Clone Chirpstack
+  #     "git clone https://github.com/yebosoftware/chirpstack-docker.git /opt/chirpstack",
+
+  #     # Start containers
+  #     "cd /opt/chirpstack && docker compose up -d"
+  #   ]
+  # }
 }
 
 resource "digitalocean_project_resources" "assign_droplets" {

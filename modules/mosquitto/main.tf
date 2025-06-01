@@ -141,3 +141,21 @@ resource "digitalocean_firewall" "mosquitto_fw" {
     destination_addresses = ["0.0.0.0/0", "::/0"]
   }
 }
+
+# These are the outputs
+output "mosquitto_host" {
+  value = digitalocean_droplet.mosquitto.ipv4_address
+}
+
+output "mosquitto_port" {
+  value = 1883
+}
+
+output "mosquitto_username" {
+  value = "admin"
+}
+
+output "mosquitto_password" {
+  value = "mypassword"
+  sensitive = true
+}
