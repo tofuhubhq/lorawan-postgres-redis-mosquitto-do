@@ -69,7 +69,7 @@ provider "digitalocean" {
 resource "local_file" "chirpstack_env" {
   filename = "${path.module}/tmp/chirpstack.env"
   content  = <<EOT
-    MQTT_BROKER_HOST=mqtt://${var.mosquitto_username}:${var.mosquitto_password}@${var.mosquitto_host}:${var.mosquitto_port}
+  MQTT_BROKER_HOST=${var.mosquitto_username}:${var.mosquitto_password}@${var.mosquitto_host}
   EOT
 }
 
@@ -90,10 +90,16 @@ resource "digitalocean_droplet" "chirpstack_nodes" {
     host        = self.ipv4_address
   }
 
+  # Need to create the directory first, since opentofu does funny stuff otherwise
+  provisioner "remote-exec" {
+    inline = [
+      "mkdir -p /opt/chirpstack"
+    ]
+  }
   # Copy the local file with the credentials to the remote machine
   provisioner "file" {
     source = local_file.chirpstack_env.filename
-    destination = "/opt/chirpstack/chirpstack.env"
+    destination = "/opt/var/chirpstack.env"
   }
   # provisioner "remote-exec" {
   #   inline = [
