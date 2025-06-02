@@ -88,6 +88,16 @@ variable "do_mosquitto_size" {
   type        = string
 }
 
+variable "do_mosquitto_username" {
+  description = "Digital ocean mosquitto username"
+  type        = string
+}
+
+variable "do_mosquitto_password" {
+  description = "Digital ocean mosquitto password"
+  type        = string
+}
+
 # Chirpstack vars
 variable "do_chirpstack_droplet_count" {
   description = "Digital ocean access token"
@@ -174,6 +184,8 @@ module "mosquitto" {
   do_ssh_key_name = var.do_ssh_key_name
   do_domain = var.do_domain
   mosquitto_config_path = "${path.module}/modules/mosquitto/mosquitto.conf"
+  do_mosquitto_username = var.do_mosquitto_username
+  do_mosquitto_password = var.do_mosquitto_password
 }
 
 module "chirpstack" {

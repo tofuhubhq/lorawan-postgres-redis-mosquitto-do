@@ -23,6 +23,16 @@ variable "do_mosquitto_size" {
   type        = string
 }
 
+variable "do_mosquitto_username" {
+  description = "Digital ocean mosquitto username"
+  type        = string
+}
+
+variable "do_mosquitto_password" {
+  description = "Digital ocean mosquitto password"
+  type        = string
+}
+
 variable "do_domain" {
   description = "Digital ocean domain"
   type        = string
@@ -69,10 +79,10 @@ resource "digitalocean_droplet" "mosquitto" {
   }
   provisioner "remote-exec" {
     inline = [
-      "apt update -y",
+      "DEBIAN_FRONTEND=noninteractive apt update -y",
       "apt install -y mosquitto",
        # Create password file before Mosquitto reads it
-      "mosquitto_passwd -b -c /etc/mosquitto/passwd admin mypassword",
+      "mosquitto_passwd -b -c /etc/mosquitto/passwd ${var.do_mosquitto_username} ${var.do_mosquitto_password}",
 
       # Add config file to enforce password auth
       "echo 'allow_anonymous false' > /etc/mosquitto/conf.d/auth.conf",

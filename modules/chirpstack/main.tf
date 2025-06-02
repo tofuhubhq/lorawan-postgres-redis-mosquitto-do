@@ -93,13 +93,13 @@ resource "digitalocean_droplet" "chirpstack_nodes" {
   # Need to create the directory first, since opentofu does funny stuff otherwise
   provisioner "remote-exec" {
     inline = [
-      "mkdir -p /opt/chirpstack"
+      "mkdir -p /var/chirpstack"
     ]
   }
   # Copy the local file with the credentials to the remote machine
   provisioner "file" {
     source = local_file.chirpstack_env.filename
-    destination = "/opt/var/chirpstack.env"
+    destination = "/var/chirpstack/chirpstack.env"
   }
   # provisioner "remote-exec" {
   #   inline = [
