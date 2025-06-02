@@ -101,22 +101,30 @@ resource "digitalocean_droplet" "chirpstack_nodes" {
     source = local_file.chirpstack_env.filename
     destination = "/var/chirpstack/chirpstack.env"
   }
-  # provisioner "remote-exec" {
-  #   inline = [
-  #     "apt-get update -y",
-  #     "apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release git",
-  #     "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg",
-  #     "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" > /etc/apt/sources.list.d/docker.list",
-  #     "apt-get update -y",
-  #     "apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin",
 
-  #     # Clone Chirpstack
-  #     "git clone https://github.com/yebosoftware/chirpstack-docker.git /opt/chirpstack",
+  provisioner "remote-exec" {
+    inline = [
+      "apt-get update -y",
+      "apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release git",
+      
+      # Install Docker
+      "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg",
+      "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" > /etc/apt/sources.list.d/docker.list",
+      "apt-get update -y",
+      "apt-get install -y docker-ce docker-ce-cli containerd.io",
 
-  #     # Start containers
-  #     "cd /opt/chirpstack && docker compose up -d"
-  #   ]
-  # }
+      # Install legacy docker-compose (hyphen version)
+      "curl -L \"https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)\" -o /usr/local/bin/docker-compose",
+      "chmod +x /usr/local/bin/docker-compose",
+      "ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose",
+
+      # Clone Chirpstack
+      "git clone https://github.com/yebosoftware/chirpstack-docker.git /opt/chirpstack",
+
+      # Start containers
+      "cd /opt/chirpstack && docker-compose up --build -d"
+    ]
+  }
 }
 
 resource "digitalocean_project_resources" "assign_droplets" {

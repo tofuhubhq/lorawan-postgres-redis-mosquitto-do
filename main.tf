@@ -202,6 +202,6 @@ module "chirpstack" {
   # These are the variables that are coming from the mosquitto module
   mosquitto_host     = module.mosquitto.mosquitto_host
   mosquitto_port     = module.mosquitto.mosquitto_port
-  mosquitto_username = module.mosquitto.mosquitto_username
-  mosquitto_password = module.mosquitto.mosquitto_password
+  mosquitto_username = var.do_mosquitto_username
+  mosquitto_password = var.do_mosquitto_password
 }

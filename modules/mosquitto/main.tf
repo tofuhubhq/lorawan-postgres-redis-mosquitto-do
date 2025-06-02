@@ -79,7 +79,8 @@ resource "digitalocean_droplet" "mosquitto" {
   }
   provisioner "remote-exec" {
     inline = [
-      "DEBIAN_FRONTEND=noninteractive apt update -y",
+      "export DEBIAN_FRONTEND=noninteractive",
+      "apt update -y",
       "apt install -y mosquitto",
        # Create password file before Mosquitto reads it
       "mosquitto_passwd -b -c /etc/mosquitto/passwd ${var.do_mosquitto_username} ${var.do_mosquitto_password}",
@@ -159,13 +160,4 @@ output "mosquitto_host" {
 
 output "mosquitto_port" {
   value = 1883
-}
-
-output "mosquitto_username" {
-  value = "admin"
-}
-
-output "mosquitto_password" {
-  value = "mypassword"
-  sensitive = true
 }
