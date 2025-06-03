@@ -101,22 +101,14 @@ resource "local_file" "chirpstack_env" {
   filename = "${path.module}/tmp/chirpstack.env"
   content  = <<EOT
   MQTT_BROKER_HOST=${var.mosquitto_username}:${var.mosquitto_password}@${var.mosquitto_host}
-  POSTGRES_HOST=postgres://${var.postgres_user}:${var.postgres_password}@${var.postgres_host}:${var.postgres_port}/${var.postgres_db_name}?sslmode=require
+  POSTGRESQL_HOST=postgres://${var.postgres_user}:${var.postgres_password}@${var.postgres_host}:${var.postgres_port}/${var.postgres_db_name}?sslmode=require
   EOT
 }
 
-# resource "null_resource" "upload_ca_cert" {
-#   provisioner "remote-exec" {
-#     connection {
-#       # your SSH setup
-#     }
-
-#     inline = [
-#       "echo '${var.ca_certificate}' > /etc/chirpstack/ca_certificate.crt"
-#     ]
-#   }
-# }
-
+resource "local_file" "ca_cert" {
+  filename = "${path.module}/tmp/ca-certificate.crt"
+  content  = var.ca_certificate
+}
 resource "digitalocean_droplet" "chirpstack_nodes" {
   count  = var.do_chirpstack_droplet_count
   name   = "chirpstack-node-${count.index + 1}"
@@ -148,10 +140,10 @@ resource "digitalocean_droplet" "chirpstack_nodes" {
 
   # Copy ca certificate from postgres deployment into remote machine
   # to allow for secure connections to the postgres machine 
-  # provisioner "file" {
-  #   source      = "../postgres/ca_certificate.crt"
-  #   destination = "/etc/chirpstack/ca_certificate.crt"
-  # }
+  provisioner "file" {
+    source      = local_file.ca_cert.filename
+    destination = "/var/chirpstack/ca-certificate.crt"
+  }
 
   # provisioner "file" {
   #   source = local_file.chirpstack_gateway_env.filename
@@ -178,7 +170,7 @@ resource "digitalocean_droplet" "chirpstack_nodes" {
       "git clone https://github.com/yebosoftware/chirpstack-docker.git /opt/chirpstack",
 
       # Start containers
-      # "cd /opt/chirpstack && docker-compose up --build -d"
+      "cd /opt/chirpstack && docker-compose up --build -d"
     ]
   }
 }

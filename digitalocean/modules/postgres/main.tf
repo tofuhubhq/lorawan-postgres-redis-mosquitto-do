@@ -54,22 +54,22 @@ resource "digitalocean_database_cluster" "postgres" {
 }
 
 # Create the pg_trgm extension
-# resource "null_resource" "enable_pg_trgm" {
-#   depends_on = [
-#     digitalocean_database_cluster.postgres
-#   ]
-#   provisioner "local-exec" {
-#     command = <<EOT
-# PGPASSWORD=${digitalocean_database_cluster.postgres.password} \
-# psql "host=${digitalocean_database_cluster.postgres.host} \
-# port=${digitalocean_database_cluster.postgres.port} \
-# user=${digitalocean_database_cluster.postgres.user} \
-# dbname=${digitalocean_database_cluster.postgres.database} \
-# sslmode=require" \
-# -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
-# EOT
-#   }
-# }
+resource "null_resource" "enable_pg_trgm" {
+  depends_on = [
+    digitalocean_database_cluster.postgres
+  ]
+  provisioner "local-exec" {
+    command = <<EOT
+PGPASSWORD=${digitalocean_database_cluster.postgres.password} \
+psql "host=${digitalocean_database_cluster.postgres.host} \
+port=${digitalocean_database_cluster.postgres.port} \
+user=${digitalocean_database_cluster.postgres.user} \
+dbname=${digitalocean_database_cluster.postgres.database} \
+sslmode=require" \
+-c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
+EOT
+  }
+}
 
 
 resource "digitalocean_database_firewall" "whitelist_chirpstack_tag" {
