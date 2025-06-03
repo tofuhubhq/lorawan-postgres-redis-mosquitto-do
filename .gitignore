@@ -8,5 +8,6 @@
 # Local Netlify folder
 .netlify
 
-modules/*/tmp/*
+*.crt
+*.env
 *.DS_Store

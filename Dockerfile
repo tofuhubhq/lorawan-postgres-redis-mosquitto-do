@@ -12,11 +12,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install OpenTofu
-RUN curl -LO https://github.com/opentofu/opentofu/releases/latest/download/tofu_Linux_x86_64.zip && \
-    unzip tofu_Linux_x86_64.zip && \
-    mv tofu /usr/local/bin/tofu && \
-    chmod +x /usr/local/bin/tofu && \
-    rm tofu_Linux_x86_64.zip
+RUN apt-get update && apt-get install curl -y && curl --proto '=https' --tlsv1.2 -fsSL https://get.opentofu.org/install-opentofu.sh -o install-opentofu.sh && chmod +x install-opentofu.sh && ./install-opentofu.sh --install-method deb && rm -f install-opentofu.sh
 
 # Working directory where project gets mounted
 WORKDIR /app
