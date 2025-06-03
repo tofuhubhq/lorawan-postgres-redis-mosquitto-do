@@ -48,6 +48,30 @@ variable "mosquitto_password" {
   type        = string
 }
 
+variable "postgres_host" {
+  description = "Digital ocean postgres host"
+  type        = string
+}
+
+variable "postgres_port" {
+  description = "Digital ocean postgres port"
+  type        = string
+}
+
+variable "postgres_db_name" {
+  description = "Digital ocean postgres port"
+  type        = string
+}
+
+variable "postgres_user" {
+  description = "Digital ocean postgres port"
+  type        = string
+}
+
+variable "postgres_password" {
+  description = "Digital ocean postgres port"
+  type        = string
+}
 variable "private_key_path" {
   description = "Path to your private SSH key"
   type        = string
@@ -66,12 +90,25 @@ provider "digitalocean" {
   token = var.do_access_token
 }
 
+# File for chirpstack configuration
 resource "local_file" "chirpstack_env" {
   filename = "${path.module}/tmp/chirpstack.env"
   content  = <<EOT
   MQTT_BROKER_HOST=${var.mosquitto_username}:${var.mosquitto_password}@${var.mosquitto_host}
+  POSTGRES_HOST=postgres://${var.postgres_user}:${var.postgres_password}@${var.postgres_host}:${var.postgres_port}/${var.postgres_db_name}?sslmode=require
   EOT
 }
+
+# File for gateway-bridge configuration
+# resource "local_file" "chirpstack_gateway_env" {
+#   filename = "${path.module}/tmp/chirpstack-gateway-bridge.env"
+#   content  = <<EOT
+#   [integration.mqtt.auth.generic]
+#   servers=["tcp://${var.mosquitto_host}"]
+#   username="${var.mosquitto_username}"
+#   password="${var.mosquitto_password}"
+#   EOT
+# }
 
 resource "digitalocean_droplet" "chirpstack_nodes" {
   count  = var.do_chirpstack_droplet_count
@@ -101,6 +138,11 @@ resource "digitalocean_droplet" "chirpstack_nodes" {
     source = local_file.chirpstack_env.filename
     destination = "/var/chirpstack/chirpstack.env"
   }
+
+  # provisioner "file" {
+  #   source = local_file.chirpstack_gateway_env.filename
+  #   destination = "/var/chirpstack/chirpstack-gateway-bridge.env"
+  # }
 
   provisioner "remote-exec" {
     inline = [
@@ -132,4 +174,29 @@ resource "digitalocean_project_resources" "assign_droplets" {
   resources = [
     for droplet in digitalocean_droplet.chirpstack_nodes : droplet.urn
   ]
+}
+
+# Create the firewall.
+resource "digitalocean_firewall" "chirpstack_fw" {
+  name = "chirpstack-firewall"
+
+  tags = ["chirpstack"]
+
+  inbound_rule {
+    protocol         = "udp"
+    port_range       = "1700"
+    source_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  outbound_rule {
+    protocol           = "tcp"
+    port_range         = "all"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  outbound_rule {
+    protocol           = "udp"
+    port_range         = "all"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
+  }
 }

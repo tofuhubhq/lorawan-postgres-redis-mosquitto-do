@@ -72,6 +72,16 @@ variable "do_db_node_count" {
   type        = string
 }
 
+variable "do_db_chirpstack_user" {
+  description = "Digital ocean db chirpstack user"
+  type        = string
+}
+
+variable "do_db_chirpstack_db_name" {
+  description = "Digital ocean db chirpstack user"
+  type        = string
+}
+
 # Mosquitto vars
 variable "do_mosquitto_region" {
   description = "Digital ocean mosquitto region"
@@ -160,17 +170,19 @@ module "network" {
 
 # WORKING
 # Create the postgres db
-# module "postgres" {
-#   source = "./modules/postgres"
-#   do_access_token = var.do_access_token
-#   do_project_id     = digitalocean_project.playground.id
-#   do_db_name       = var.do_db_name
-#   do_db_engine     = var.do_db_engine
-#   do_db_version    = var.do_db_version
-#   do_db_size       = var.do_db_size
-#   do_db_region     = var.do_db_region
-#   do_db_node_count = var.do_db_node_count
-# }
+module "postgres" {
+  source = "./modules/postgres"
+  do_access_token = var.do_access_token
+  do_project_id     = digitalocean_project.playground.id
+  do_db_name       = var.do_db_name
+  do_db_engine     = var.do_db_engine
+  do_db_version    = var.do_db_version
+  do_db_size       = var.do_db_size
+  do_db_region     = var.do_db_region
+  do_db_node_count = var.do_db_node_count
+  do_db_chirpstack_db_name = var.do_db_chirpstack_db_name
+  do_db_chirpstack_user =  var.do_db_chirpstack_user
+}
 
 # Create the mosquitto broker
 module "mosquitto" {
@@ -204,4 +216,10 @@ module "chirpstack" {
   mosquitto_port     = module.mosquitto.mosquitto_port
   mosquitto_username = var.do_mosquitto_username
   mosquitto_password = var.do_mosquitto_password
+
+  postgres_host     = module.postgres.postgres_credentials.host
+  postgres_port     = module.postgres.postgres_credentials.port
+  postgres_db_name  = module.postgres.postgres_credentials.db_name
+  postgres_user     = module.postgres.postgres_credentials.user
+  postgres_password = module.postgres.postgres_credentials.password
 }
