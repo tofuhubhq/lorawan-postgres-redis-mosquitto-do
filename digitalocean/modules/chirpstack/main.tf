@@ -72,6 +72,12 @@ variable "postgres_password" {
   description = "Digital ocean postgres port"
   type        = string
 }
+
+variable "ca_certificate" {
+  description = "DigitalOcean CA certificate for secure DB connection"
+  type        = string
+}
+
 variable "private_key_path" {
   description = "Path to your private SSH key"
   type        = string
@@ -99,15 +105,16 @@ resource "local_file" "chirpstack_env" {
   EOT
 }
 
-# File for gateway-bridge configuration
-# resource "local_file" "chirpstack_gateway_env" {
-#   filename = "${path.module}/tmp/chirpstack-gateway-bridge.env"
-#   content  = <<EOT
-#   [integration.mqtt.auth.generic]
-#   servers=["tcp://${var.mosquitto_host}"]
-#   username="${var.mosquitto_username}"
-#   password="${var.mosquitto_password}"
-#   EOT
+# resource "null_resource" "upload_ca_cert" {
+#   provisioner "remote-exec" {
+#     connection {
+#       # your SSH setup
+#     }
+
+#     inline = [
+#       "echo '${var.ca_certificate}' > /etc/chirpstack/ca_certificate.crt"
+#     ]
+#   }
 # }
 
 resource "digitalocean_droplet" "chirpstack_nodes" {
@@ -139,6 +146,13 @@ resource "digitalocean_droplet" "chirpstack_nodes" {
     destination = "/var/chirpstack/chirpstack.env"
   }
 
+  # Copy ca certificate from postgres deployment into remote machine
+  # to allow for secure connections to the postgres machine 
+  # provisioner "file" {
+  #   source      = "../postgres/ca_certificate.crt"
+  #   destination = "/etc/chirpstack/ca_certificate.crt"
+  # }
+
   # provisioner "file" {
   #   source = local_file.chirpstack_gateway_env.filename
   #   destination = "/var/chirpstack/chirpstack-gateway-bridge.env"
@@ -164,7 +178,7 @@ resource "digitalocean_droplet" "chirpstack_nodes" {
       "git clone https://github.com/yebosoftware/chirpstack-docker.git /opt/chirpstack",
 
       # Start containers
-      "cd /opt/chirpstack && docker-compose up --build -d"
+      # "cd /opt/chirpstack && docker-compose up --build -d"
     ]
   }
 }

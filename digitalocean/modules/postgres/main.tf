@@ -38,16 +38,6 @@ variable "do_db_node_count" {
   type        = string
 }
 
-variable "do_db_chirpstack_user" {
-  description = "Digital ocean db chirpstack user"
-  type        = string
-}
-
-variable "do_db_chirpstack_db_name" {
-  description = "Digital ocean db chirpstack db name"
-  type        = string
-}
-
 provider "digitalocean" {
   token = var.do_access_token
 }
@@ -63,15 +53,24 @@ resource "digitalocean_database_cluster" "postgres" {
   project_id = var.do_project_id
 }
 
-resource "digitalocean_database_user" "chirpstack_user" {
-  cluster_id = digitalocean_database_cluster.postgres.id
-  name       = var.do_db_chirpstack_user
-}
+# Create the pg_trgm extension
+# resource "null_resource" "enable_pg_trgm" {
+#   depends_on = [
+#     digitalocean_database_cluster.postgres
+#   ]
+#   provisioner "local-exec" {
+#     command = <<EOT
+# PGPASSWORD=${digitalocean_database_cluster.postgres.password} \
+# psql "host=${digitalocean_database_cluster.postgres.host} \
+# port=${digitalocean_database_cluster.postgres.port} \
+# user=${digitalocean_database_cluster.postgres.user} \
+# dbname=${digitalocean_database_cluster.postgres.database} \
+# sslmode=require" \
+# -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
+# EOT
+#   }
+# }
 
-resource "digitalocean_database_db" "chirpstack_db" {
-  cluster_id = digitalocean_database_cluster.postgres.id
-  name       = var.do_db_chirpstack_db_name
-}
 
 resource "digitalocean_database_firewall" "whitelist_chirpstack_tag" {
   cluster_id = digitalocean_database_cluster.postgres.id
@@ -100,7 +99,10 @@ output "postgres_credentials" {
   sensitive = true
 }
 
-output "chirpstack_user_password" {
-  value     = digitalocean_database_user.chirpstack_user.password
-  sensitive = true
+data "digitalocean_database_ca" "this" {
+  cluster_id = digitalocean_database_cluster.postgres.id
+}
+
+output "ca_certificate" {
+  value = data.digitalocean_database_ca.this.certificate
 }

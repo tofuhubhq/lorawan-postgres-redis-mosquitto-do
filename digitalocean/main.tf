@@ -72,16 +72,6 @@ variable "do_db_node_count" {
   type        = string
 }
 
-variable "do_db_chirpstack_user" {
-  description = "Digital ocean db chirpstack user"
-  type        = string
-}
-
-variable "do_db_chirpstack_db_name" {
-  description = "Digital ocean db chirpstack user"
-  type        = string
-}
-
 # Mosquitto vars
 variable "do_mosquitto_region" {
   description = "Digital ocean mosquitto region"
@@ -180,8 +170,6 @@ module "postgres" {
   do_db_size       = var.do_db_size
   do_db_region     = var.do_db_region
   do_db_node_count = var.do_db_node_count
-  do_db_chirpstack_db_name = var.do_db_chirpstack_db_name
-  do_db_chirpstack_user =  var.do_db_chirpstack_user
 }
 
 # Create the mosquitto broker
@@ -222,4 +210,6 @@ module "chirpstack" {
   postgres_db_name  = module.postgres.postgres_credentials.db_name
   postgres_user     = module.postgres.postgres_credentials.user
   postgres_password = module.postgres.postgres_credentials.password
+
+  ca_certificate = module.postgres.ca_certificate
 }
