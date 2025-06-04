@@ -22,6 +22,12 @@ variable "do_chirpstack_droplet_region" {
   default     = ""
 }
 
+variable "domain_depends_on" {
+  description = "Dummy variable to enforce domain creation order"
+  type        = string
+  default     = ""
+}
+
 provider "digitalocean" {
   token = var.do_access_token
 }
@@ -36,6 +42,16 @@ resource "digitalocean_loadbalancer" "chirpstack_lb" {
 
     target_port     = 8080
     target_protocol = "http"
+  }
+
+  forwarding_rule {
+    entry_port     = 443
+    entry_protocol = "https"
+
+    target_port    = 8080
+    target_protocol = "http"
+
+    certificate_id = digitalocean_certificate.lns_tls.id
   }
 
   healthcheck {
@@ -53,16 +69,27 @@ resource "digitalocean_loadbalancer" "chirpstack_lb" {
 }
 
 # Create a DNS record pointing to the load balancer
-# resource "digitalocean_record" "chirpstack_dns" {
-#   domain = var.do_domain
-#   type   = "A"
-#   name   = "lorawan"
-#   value  = digitalocean_loadbalancer.chirpstack_lb.ip
-# }
+resource "digitalocean_record" "chirpstack_dns" {
+  domain = var.do_domain
+  type   = "A"
+  name   = "lorawan"
+  value  = "1.1.1.1"  # Temporary dummy IP
+}
 
-# resource "digitalocean_certificate" "lns_tls" {
-#   name = "lns-cert"
-#   type = "lets_encrypt"
+resource "digitalocean_certificate" "lns_tls" {
+  name = "lns-cert"
+  type = "lets_encrypt"
 
-#   domains = [var.do_domain]
-# }
+  depends_on = [digitalocean_record.chirpstack_dns]
+
+  domains = ["lorawan.${var.do_domain}"]
+}
+
+resource "digitalocean_record" "chirpstack_dns_update" {
+  domain = var.do_domain
+  type   = "A"
+  name   = "lorawan"
+  value  = digitalocean_loadbalancer.chirpstack_lb.ip
+
+  depends_on = [digitalocean_certificate.lns_tls]
+}

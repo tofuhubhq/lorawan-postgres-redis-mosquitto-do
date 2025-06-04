@@ -189,6 +189,11 @@ resource "digitalocean_firewall" "chirpstack_fw" {
   tags = ["chirpstack"]
 
   inbound_rule {
+    protocol         = "tcp"
+    port_range       = "8080"
+    source_addresses = ["0.0.0.0/0", "::/0"]
+  }
+  inbound_rule {
     protocol         = "udp"
     port_range       = "1700"
     source_addresses = ["0.0.0.0/0", "::/0"]

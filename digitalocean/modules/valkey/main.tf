@@ -3,6 +3,10 @@ variable "do_access_token" {
   type        = string
 }
 
+variable "do_project_id" {
+  description = "Digital ocean project id"
+  type        = string
+}
 variable "valkey_droplet_size" {
   description = "Droplet size for Valkey"
   type        = string
@@ -59,33 +63,37 @@ resource "digitalocean_droplet" "valkey" {
   }
 
   provisioner "remote-exec" {
-    inline = [
-      "apt update -y",
-      "apt install -y valkey-server",
-      "sed -i 's/^# requirepass .*/requirepass ${var.valkey_password}/' /etc/valkey/valkey.conf",
-      "systemctl restart valkey-server"
-    ]
-  }
+  inline = [
+    "bash -c 'set -eux && while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do echo \"Waiting for apt lock...\"; sleep 3; done && apt-get update -y || true && apt-get install -y redis-server && sed -i \"s/^#\\?\\s*bind .*/bind 0.0.0.0/\" /etc/redis/redis.conf && sed -i \"s/^#\\?\\s*protected-mode .*/protected-mode no/\" /etc/redis/redis.conf && sed -i \"s/^#\\?\\s*requirepass .*/requirepass ${var.valkey_password}/\" /etc/redis/redis.conf && systemctl enable redis-server && systemctl restart redis-server'"
+  ]
 }
 
-# TODO: add firewall
-# resource "digitalocean_firewall" "valkey_fw" {
-#   name = "valkey-firewall"
 
-#   inbound_rule {
-#     protocol         = "tcp"
-#     port_range       = "6379"
-#     source_addresses = ["${var.allowed_chirpstack_ips}"] # OR hardcode trusted IPs
-#   }
+}
 
-#   outbound_rule {
-#     protocol              = "tcp"
-#     port_range            = "all"
-#     destination_addresses = ["0.0.0.0/0", "::/0"]
-#   }
+resource "digitalocean_firewall" "valkey_fw" {
+  name = "valkey-firewall"
 
-#   droplet_ids = [digitalocean_droplet.valkey.id]
-# }
+  inbound_rule {
+    protocol         = "tcp"
+    port_range       = "6379"
+    source_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  outbound_rule {
+    protocol              = "tcp"
+    port_range            = "all"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  droplet_ids = [digitalocean_droplet.valkey.id]
+}
+
+# Assigns the mosquitto droplet to the project
+resource "digitalocean_project_resources" "assign_valkey_droplet" {
+  project = var.do_project_id
+  resources = [digitalocean_droplet.valkey.urn]
+}
 
 output "valkey_host" {
   value = digitalocean_droplet.valkey.ipv4_address

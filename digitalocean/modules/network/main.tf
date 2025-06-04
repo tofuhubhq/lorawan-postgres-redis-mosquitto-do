@@ -56,4 +56,10 @@ resource "digitalocean_firewall" "ssh" {
   }
 }
 
+output "domain_name" {
+  value = digitalocean_domain.purus_domain.name
+}
 
+output "domain_resource_id" {
+  value = digitalocean_domain.purus_domain.id
+}
