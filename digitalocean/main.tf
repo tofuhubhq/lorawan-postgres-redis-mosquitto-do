@@ -213,3 +213,12 @@ module "chirpstack" {
 
   ca_certificate = module.postgres.ca_certificate
 }
+
+module "loadbalancer" {
+  source = "./modules/loadbalancer"
+  do_project_id = digitalocean_project.playground.id
+  do_chirpstack_droplet_region = var.do_chirpstack_droplet_region
+  droplet_ids = module.chirpstack.chirpstack_droplet_ids
+  do_domain = var.do_domain
+  do_access_token = var.do_access_token
+}

@@ -18,4 +18,4 @@ RUN apt-get update && apt-get install curl -y && curl --proto '=https' --tlsv1.2
 WORKDIR /app
 
 # Default command: run tofu apply
-CMD ["sh", "-c", "tofu init && tofu apply -var-file=/app/vars/variables.tfvars -auto-approve -state=/tfstate/terraform.tfstate ${varFileArgs.join(' ')}"]
+CMD ["sh", "-c", "tofu init && tofu apply -var-file=/app/vars/variables.tfvars -auto-approve"]

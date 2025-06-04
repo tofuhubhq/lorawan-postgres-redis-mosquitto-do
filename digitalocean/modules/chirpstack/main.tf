@@ -206,3 +206,7 @@ resource "digitalocean_firewall" "chirpstack_fw" {
     destination_addresses = ["0.0.0.0/0", "::/0"]
   }
 }
+
+output "chirpstack_droplet_ids" {
+  value = digitalocean_droplet.chirpstack_nodes[*].id
+}
