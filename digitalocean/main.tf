@@ -119,6 +119,40 @@ variable "do_chirpstack_droplet_region" {
   type        = string
 }
 
+# Valkey
+variable "valkey_droplet_size" {
+  description = "Droplet size for Valkey"
+  type        = string
+  default     = "s-1vcpu-1gb"
+}
+
+variable "valkey_droplet_image" {
+  description = "Image for Valkey Droplet"
+  type        = string
+  default     = "ubuntu-22-04-x64"
+}
+
+variable "valkey_region" {
+  description = "Region for Valkey Droplet"
+  type        = string
+}
+
+variable "valkey_password" {
+  description = "Password to secure Valkey"
+  type        = string
+}
+
+variable "private_key_path" {
+  description = "Path to your SSH private key"
+  type        = string
+}
+
+variable "do_ssh_key_name" {
+  description = "SSH key name for Valkey droplet"
+  type        = string
+}
+
+
 # SSH config
 variable "private_key_path" {
   description = "Path to your private SSH key"
