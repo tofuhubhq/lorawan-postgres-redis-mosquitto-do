@@ -119,26 +119,26 @@ variable "do_chirpstack_droplet_region" {
   type        = string
 }
 
-# Valkey
-variable "valkey_droplet_size" {
-  description = "Droplet size for Valkey"
+# redis
+variable "redis_droplet_size" {
+  description = "Droplet size for redis"
   type        = string
   default     = "s-1vcpu-1gb"
 }
 
-variable "valkey_droplet_image" {
-  description = "Image for Valkey Droplet"
+variable "redis_droplet_image" {
+  description = "Image for redis Droplet"
   type        = string
   default     = "ubuntu-22-04-x64"
 }
 
-variable "valkey_region" {
-  description = "Region for Valkey Droplet"
+variable "redis_region" {
+  description = "Region for redis Droplet"
   type        = string
 }
 
-variable "valkey_password" {
-  description = "Password to secure Valkey"
+variable "redis_password" {
+  description = "Password to secure redis"
   type        = string
 }
 
@@ -173,83 +173,86 @@ resource "digitalocean_project" "playground" {
   environment = "Development"
 }
 
-# module "network" {
-#   source = "./modules/network"
-#   do_access_token = var.do_access_token
-#   do_vpc_region  = var.do_vpc_region
-#   do_domain = var.do_domain
-# }
+module "network" {
+  source = "./modules/network"
+  do_access_token = var.do_access_token
+  do_vpc_region  = var.do_vpc_region
+  do_domain = var.do_domain
+}
 
-module "valkey" {
-  source = "./modules/valkey"
+module "redis" {
+  source = "./modules/redis"
   do_access_token = var.do_access_token
   do_ssh_key_name = var.do_ssh_key_name
-  valkey_droplet_size = var.valkey_droplet_size
-  valkey_droplet_image = var.valkey_droplet_image
-  valkey_region = var.valkey_region
-  valkey_password = var.valkey_password
+  redis_droplet_size = var.redis_droplet_size
+  redis_droplet_image = var.redis_droplet_image
+  redis_region = var.redis_region
+  redis_password = var.redis_password
   private_key_path = var.private_key_path
   do_project_id = digitalocean_project.playground.id
 }
 
-# module "postgres" {
-#   source = "./modules/postgres"
-#   do_access_token = var.do_access_token
-#   do_project_id     = digitalocean_project.playground.id
-#   do_db_name       = var.do_db_name
-#   do_db_engine     = var.do_db_engine
-#   do_db_version    = var.do_db_version
-#   do_db_size       = var.do_db_size
-#   do_db_region     = var.do_db_region
-#   do_db_node_count = var.do_db_node_count
-# }
-# module "mosquitto" {
-#   source = "./modules/mosquitto"
-#   do_access_token = var.do_access_token
-#   do_mosquitto_image = var.do_mosquitto_image
-#   do_mosquitto_size = var.do_mosquitto_size
-#   do_mosquitto_region = var.do_mosquitto_region
-#   private_key_path = var.private_key_path
-#   do_project_id = digitalocean_project.playground.id
-#   do_ssh_key_name = var.do_ssh_key_name
-#   do_domain = var.do_domain
-#   mosquitto_config_path = "${path.module}/modules/mosquitto/mosquitto.conf"
-#   do_mosquitto_username = var.do_mosquitto_username
-#   do_mosquitto_password = var.do_mosquitto_password
-# }
+module "postgres" {
+  source = "./modules/postgres"
+  do_access_token = var.do_access_token
+  do_project_id     = digitalocean_project.playground.id
+  do_db_name       = var.do_db_name
+  do_db_engine     = var.do_db_engine
+  do_db_version    = var.do_db_version
+  do_db_size       = var.do_db_size
+  do_db_region     = var.do_db_region
+  do_db_node_count = var.do_db_node_count
+}
+module "mosquitto" {
+  source = "./modules/mosquitto"
+  do_access_token = var.do_access_token
+  do_mosquitto_image = var.do_mosquitto_image
+  do_mosquitto_size = var.do_mosquitto_size
+  do_mosquitto_region = var.do_mosquitto_region
+  private_key_path = var.private_key_path
+  do_project_id = digitalocean_project.playground.id
+  do_ssh_key_name = var.do_ssh_key_name
+  do_domain = var.do_domain
+  mosquitto_config_path = "${path.module}/modules/mosquitto/mosquitto.conf"
+  do_mosquitto_username = var.do_mosquitto_username
+  do_mosquitto_password = var.do_mosquitto_password
+}
 
-# module "chirpstack" {
-#   source = "./modules/chirpstack"
-#   do_access_token = var.do_access_token
-#   do_chirpstack_droplet_count = var.do_chirpstack_droplet_count
-#   do_chirpstack_droplet_size = var.do_chirpstack_droplet_size
-#   do_chirpstack_droplet_image = var.do_chirpstack_droplet_image
-#   do_chirpstack_droplet_region = var.do_chirpstack_droplet_region
-#   private_key_path = var.private_key_path
-#   do_ssh_key_name = var.do_ssh_key_name
-#   do_project_id = digitalocean_project.playground.id
+module "chirpstack" {
+  source = "./modules/chirpstack"
+  do_access_token = var.do_access_token
+  do_chirpstack_droplet_count = var.do_chirpstack_droplet_count
+  do_chirpstack_droplet_size = var.do_chirpstack_droplet_size
+  do_chirpstack_droplet_image = var.do_chirpstack_droplet_image
+  do_chirpstack_droplet_region = var.do_chirpstack_droplet_region
+  private_key_path = var.private_key_path
+  do_ssh_key_name = var.do_ssh_key_name
+  do_project_id = digitalocean_project.playground.id
 
-#   # These are the variables that are coming from the mosquitto module
-#   mosquitto_host     = module.mosquitto.mosquitto_host
-#   mosquitto_port     = module.mosquitto.mosquitto_port
-#   mosquitto_username = var.do_mosquitto_username
-#   mosquitto_password = var.do_mosquitto_password
+  # These are the variables that are coming from the mosquitto module
+  mosquitto_host     = module.mosquitto.mosquitto_host
+  mosquitto_port     = module.mosquitto.mosquitto_port
+  mosquitto_username = var.do_mosquitto_username
+  mosquitto_password = var.do_mosquitto_password
 
-#   postgres_host     = module.postgres.postgres_credentials.host
-#   postgres_port     = module.postgres.postgres_credentials.port
-#   postgres_db_name  = module.postgres.postgres_credentials.db_name
-#   postgres_user     = module.postgres.postgres_credentials.user
-#   postgres_password = module.postgres.postgres_credentials.password
+  postgres_host     = module.postgres.postgres_credentials.host
+  postgres_port     = module.postgres.postgres_credentials.port
+  postgres_db_name  = module.postgres.postgres_credentials.db_name
+  postgres_user     = module.postgres.postgres_credentials.user
+  postgres_password = module.postgres.postgres_credentials.password
 
-#   ca_certificate = module.postgres.ca_certificate
-# }
+  redis_host = module.redis.redis_host
+  redis_password = module.redis.redis_password
+  
+  ca_certificate = module.postgres.ca_certificate
+}
 
-# module "loadbalancer" {
-#   source = "./modules/loadbalancer"
-#   do_project_id = digitalocean_project.playground.id
-#   do_chirpstack_droplet_region = var.do_chirpstack_droplet_region
-#   droplet_ids = module.chirpstack.chirpstack_droplet_ids
-#   do_access_token = var.do_access_token
-#   do_domain         = module.network.domain_name
-#   domain_depends_on = module.network.domain_resource_id
-# }
+module "loadbalancer" {
+  source = "./modules/loadbalancer"
+  do_project_id = digitalocean_project.playground.id
+  do_chirpstack_droplet_region = var.do_chirpstack_droplet_region
+  droplet_ids = module.chirpstack.chirpstack_droplet_ids
+  do_access_token = var.do_access_token
+  do_domain         = module.network.domain_name
+  domain_depends_on = module.network.domain_resource_id
+}

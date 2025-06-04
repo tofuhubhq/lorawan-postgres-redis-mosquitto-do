@@ -88,6 +88,16 @@ variable "do_ssh_key_name" {
   type        = string
 }
 
+variable "redis_host" {
+  description = "SSH key name"
+  type        = string
+}
+
+variable "redis_password" {
+  description = "SSH key name"
+  type        = string
+}
+
 data "digitalocean_ssh_key" "my_key" {
   name = var.do_ssh_key_name
 }
@@ -102,6 +112,7 @@ resource "local_file" "chirpstack_env" {
   content  = <<EOT
   MQTT_BROKER_HOST=${var.mosquitto_username}:${var.mosquitto_password}@${var.mosquitto_host}
   POSTGRESQL_HOST=postgres://${var.postgres_user}:${var.postgres_password}@${var.postgres_host}:${var.postgres_port}/${var.postgres_db_name}?sslmode=require
+  REDIS_HOST=default:${var.redis_password}@${var.redis_host}
   EOT
 }
 
@@ -170,7 +181,7 @@ resource "digitalocean_droplet" "chirpstack_nodes" {
       "git clone https://github.com/yebosoftware/chirpstack-docker.git /opt/chirpstack",
 
       # Start containers
-      "cd /opt/chirpstack && docker-compose up --build -d"
+      # "cd /opt/chirpstack && docker-compose up --build -d"
     ]
   }
 }
