@@ -53,7 +53,7 @@ resource "digitalocean_droplet" "redis" {
   size   = var.redis_droplet_size
   image  = var.redis_droplet_image
   ssh_keys = [data.digitalocean_ssh_key.redis_key.id]
-  tags     = ["redis"]
+  tags     = ["redis", "ssh"]
 
   connection {
     type        = "ssh"

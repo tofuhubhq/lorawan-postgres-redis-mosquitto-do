@@ -1,0 +1,9 @@
+{
+  "name": "lorawan-postgres-valkey-mosquitto",
+  "version": "0.0.1",
+  "description": "Deploys a full lorawan stack on DigitalOcean",
+  "repository": "https://github.com/yourusername/lorawan-stack",
+  "author": "yourusername",
+  "tags": ["lorawan", "iot", "postgres", "valkey"],
+  "license": "MIT"
+}

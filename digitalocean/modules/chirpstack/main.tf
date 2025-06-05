@@ -178,10 +178,10 @@ resource "digitalocean_droplet" "chirpstack_nodes" {
       "ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose",
 
       # Clone Chirpstack
-      "git clone https://github.com/yebosoftware/chirpstack-docker.git /opt/chirpstack",
+      "git clone https://github.com/tofuhubhq/chirpstack-docker.git /opt/chirpstack",
 
       # Start containers
-      # "cd /opt/chirpstack && docker-compose up --build -d"
+      "cd /opt/chirpstack && docker-compose up --build -d"
     ]
   }
 }
