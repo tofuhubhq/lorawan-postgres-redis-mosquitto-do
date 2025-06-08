@@ -1,5 +1,5 @@
 {
-  "name": "lorawan-postgres-valkey-mosquitto",
+  "name": "lorawan-postgres-redis-mosquitto-do",
   "version": "0.0.1",
   "description": "Deploys a full lorawan stack on DigitalOcean",
   "repository": "https://github.com/yourusername/lorawan-stack",
