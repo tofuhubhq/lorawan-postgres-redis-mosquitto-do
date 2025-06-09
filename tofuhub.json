@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Deploys a full lorawan stack on DigitalOcean",
   "repository": "https://github.com/yourusername/lorawan-stack",
+  "commit": "c9f1b2d28d3f4c0a812f7f728e83754fd37a1a1",
   "author": "yourusername",
   "tags": ["lorawan", "iot", "postgres", "valkey"],
   "license": "MIT"
