@@ -121,8 +121,8 @@ resource "local_file" "ca_cert" {
   content  = var.ca_certificate
 }
 
-#@tofuhub:connects_to-postgres
-#@tofuhub:connects_to-redis
+#@tofuhub:connects_to->postgres
+#@tofuhub:connects_to->redis
 resource "digitalocean_droplet" "chirpstack_nodes" {
   count  = var.do_chirpstack_droplet_count
   name   = "chirpstack-node-${count.index + 1}"
