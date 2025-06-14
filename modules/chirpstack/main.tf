@@ -120,6 +120,12 @@ resource "local_file" "ca_cert" {
   filename = "${path.module}/tmp/ca-certificate.crt"
   content  = var.ca_certificate
 }
+
+#@tofuhub:pulls_data_from->redis
+#@tofuhub:pulls_data_from->postgres
+#@tofuhub:protected_by->chirpstack_firewall
+#@tofuhub:protected_by->ssh_firewall
+#@tofuhub:contains->docker
 resource "digitalocean_droplet" "chirpstack_nodes" {
   count  = var.do_chirpstack_droplet_count
   name   = "chirpstack-node-${count.index + 1}"
@@ -160,8 +166,8 @@ resource "digitalocean_droplet" "chirpstack_nodes" {
   #   source = local_file.chirpstack_gateway_env.filename
   #   destination = "/var/chirpstack/chirpstack-gateway-bridge.env"
   # }
-
   provisioner "remote-exec" {
+    # to persist data.
     inline = [
       "apt-get update -y",
       "apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release git",

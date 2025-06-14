@@ -31,6 +31,8 @@ variable "domain_depends_on" {
 provider "digitalocean" {
   token = var.do_access_token
 }
+
+#@tofuhub:exposes->chirpstack_nodes
 resource "digitalocean_loadbalancer" "chirpstack_lb" {
   name   = "chirpstack-lb"
   region = var.do_chirpstack_droplet_region

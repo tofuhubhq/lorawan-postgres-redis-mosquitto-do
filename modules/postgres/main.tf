@@ -42,7 +42,7 @@ provider "digitalocean" {
   token = var.do_access_token
 }
 
-# Create a Postgres instance
+#@tofuhub:is_used_by->chirpstack_nodes
 resource "digitalocean_database_cluster" "postgres" {
   name       = var.do_db_name
   engine     = var.do_db_engine
