@@ -47,7 +47,7 @@ data "digitalocean_ssh_key" "redis_key" {
   name = var.do_ssh_key_name
 }
 
-#@tofuhub:is_used_by->chirpstack_nodes
+#@tofuhub:connects_to->chirpstack_nodes
 resource "digitalocean_droplet" "redis" {
   name   = "redis"
   region = var.redis_region

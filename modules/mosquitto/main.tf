@@ -62,7 +62,7 @@ provider "digitalocean" {
   token = var.do_access_token
 }
 
-#@tofuhub:is_used_by->chirpstack_nodes
+#@tofuhub:connects_to->chirpstack_nodes
 resource "digitalocean_droplet" "mosquitto" {
   name   = "mosquitto-broker"
   region = var.do_mosquitto_region
