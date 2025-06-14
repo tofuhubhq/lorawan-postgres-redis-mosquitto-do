@@ -21,8 +21,9 @@ provider "digitalocean" {
 # Create the VPC. There is no need to assign it to the project,
 # because VPCs are not project scoped.
 #@tofuhub:protects->chirpstack_nodes
-#@tofuhub:protects->mosquitto_broker
+#@tofuhub:protects->mosquitto
 #@tofuhub:protects->redis
+#@tofuhub:protects->postgres
 resource "digitalocean_vpc" "main" {
   name     = "lorawan-vpc"
   region   = var.do_vpc_region
