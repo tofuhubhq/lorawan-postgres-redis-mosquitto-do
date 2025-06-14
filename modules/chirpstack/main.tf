@@ -123,6 +123,7 @@ resource "local_file" "ca_cert" {
 
 #@tofuhub:connects_to->postgres
 #@tofuhub:connects_to->redis
+#@tofuhub:connects_to->mosquitto
 resource "digitalocean_droplet" "chirpstack_nodes" {
   count  = var.do_chirpstack_droplet_count
   name   = "chirpstack-node-${count.index + 1}"
