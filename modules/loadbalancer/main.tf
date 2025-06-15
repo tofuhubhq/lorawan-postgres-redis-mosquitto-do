@@ -32,7 +32,7 @@ provider "digitalocean" {
   token = var.do_access_token
 }
 
-#@tofuhub:connects_to->chirpstack_nodes
+#!@tofuhub:connects_to->chirpstack_nodes
 resource "digitalocean_loadbalancer" "chirpstack_lb" {
   name   = "chirpstack-lb"
   region = var.do_chirpstack_droplet_region
