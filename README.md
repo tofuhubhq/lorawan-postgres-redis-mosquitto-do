@@ -1,6 +1,6 @@
 # 🛰️ ChirpStack Full Stack Deployment
 
-Deploy a production-ready ChirpStack instance with all its core dependencies using OpenTofu. This package includes:
+Deploy a production-ready ChirpStack instance with all its core dependencies using OpenTofu on Google Cloud Platform. This package includes:
 
 - **ChirpStack Network Server**
 - **ChirpStack Application Server**
@@ -9,4 +9,4 @@ Deploy a production-ready ChirpStack instance with all its core dependencies usi
 - **Mosquitto (MQTT Broker)** for device uplink/downlink messaging
 - **Load Balancer** for routing external traffic
 
-> ⚡ Deploy to Digital Ocean
+> ⚡ Deploy to Google Cloud Platform

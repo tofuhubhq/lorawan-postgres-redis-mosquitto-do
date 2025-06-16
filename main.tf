@@ -1,8 +1,8 @@
 terraform {
   required_providers {
-    digitalocean = {
-      source  = "digitalocean/digitalocean"
-      version = "~> 2.0"
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 5.0"
     }
 
     local = {
@@ -10,6 +10,22 @@ terraform {
       version = "~> 2.0"
     }
   }
+}
+
+# Google Cloud configuration
+variable "gcp_project" {
+  description = "GCP project ID"
+  type        = string
+}
+
+variable "gcp_region" {
+  description = "GCP region"
+  type        = string
+}
+
+variable "gcp_credentials_file" {
+  description = "Path to the GCP service account JSON credentials"
+  type        = string
 }
 
 # Digital Ocean
@@ -155,47 +171,42 @@ variable "do_ssh_key_name" {
   type        = string
 }
 
-data "digitalocean_ssh_key" "my_key" {
-  name = var.do_ssh_key_name
-}
+
 
 # Providers
 
-provider "digitalocean" {
-  token = var.do_access_token
+provider "google" {
+  credentials = file(var.gcp_credentials_file)
+  project     = var.gcp_project
+  region      = var.gcp_region
 }
 
-# Create project
-resource "digitalocean_project" "playground" {
-  name        = var.do_project_name
-  description = var.do_project_description
-  purpose     = "Web Application"
-  environment = "Development"
-}
 
 module "network" {
-  source = "./modules/network"
-  do_access_token = var.do_access_token
-  do_vpc_region  = var.do_vpc_region
-  do_domain = var.do_domain
+  source               = "./modules/network"
+  gcp_project          = var.gcp_project
+  gcp_region           = var.gcp_region
+  gcp_credentials_file = var.gcp_credentials_file
+  do_domain            = var.do_domain
 }
 
 module "redis" {
-  source = "./modules/redis"
-  do_access_token = var.do_access_token
-  do_ssh_key_name = var.do_ssh_key_name
-  redis_droplet_size = var.redis_droplet_size
-  redis_droplet_image = var.redis_droplet_image
-  redis_region = var.redis_region
-  redis_password = var.redis_password
-  private_key_path = var.private_key_path
-  do_project_id = digitalocean_project.playground.id
+  source               = "./modules/redis"
+  gcp_project          = var.gcp_project
+  gcp_region           = var.gcp_region
+  gcp_credentials_file = var.gcp_credentials_file
+  gcp_network_self_link = module.network.domain_resource_id
+  redis_droplet_size   = var.redis_droplet_size
+  redis_droplet_image  = var.redis_droplet_image
+  redis_region         = var.redis_region
+  redis_password       = var.redis_password
+  private_key_path     = var.private_key_path
 }
 
-module "postgres" {
-  source = "./modules/postgres"
-  do_access_token = var.do_access_token
-  do_project_id     = digitalocean_project.playground.id
+  source               = "./modules/postgres"
+  gcp_project          = var.gcp_project
+  gcp_region           = var.gcp_region
+  gcp_credentials_file = var.gcp_credentials_file
   do_db_name       = var.do_db_name
   do_db_engine     = var.do_db_engine
   do_db_version    = var.do_db_version
@@ -204,30 +215,32 @@ module "postgres" {
   do_db_node_count = var.do_db_node_count
 }
 module "mosquitto" {
-  source = "./modules/mosquitto"
-  do_access_token = var.do_access_token
-  do_mosquitto_image = var.do_mosquitto_image
-  do_mosquitto_size = var.do_mosquitto_size
-  do_mosquitto_region = var.do_mosquitto_region
-  private_key_path = var.private_key_path
-  do_project_id = digitalocean_project.playground.id
-  do_ssh_key_name = var.do_ssh_key_name
-  do_domain = var.do_domain
+  source               = "./modules/mosquitto"
+  gcp_project          = var.gcp_project
+  gcp_region           = var.gcp_region
+  gcp_credentials_file = var.gcp_credentials_file
+  gcp_network_self_link = module.network.domain_resource_id
+  gcp_dns_zone         = module.network.domain_name
+  do_mosquitto_image   = var.do_mosquitto_image
+  do_mosquitto_size    = var.do_mosquitto_size
+  do_mosquitto_region  = var.do_mosquitto_region
+  private_key_path     = var.private_key_path
+  do_domain            = var.do_domain
   mosquitto_config_path = "${path.module}/modules/mosquitto/mosquitto.conf"
   do_mosquitto_username = var.do_mosquitto_username
   do_mosquitto_password = var.do_mosquitto_password
 }
 
 module "chirpstack" {
-  source = "./modules/chirpstack"
-  do_access_token = var.do_access_token
+  source               = "./modules/chirpstack"
+  gcp_project          = var.gcp_project
+  gcp_region           = var.gcp_region
+  gcp_credentials_file = var.gcp_credentials_file
   do_chirpstack_droplet_count = var.do_chirpstack_droplet_count
-  do_chirpstack_droplet_size = var.do_chirpstack_droplet_size
+  do_chirpstack_droplet_size  = var.do_chirpstack_droplet_size
   do_chirpstack_droplet_image = var.do_chirpstack_droplet_image
   do_chirpstack_droplet_region = var.do_chirpstack_droplet_region
   private_key_path = var.private_key_path
-  do_ssh_key_name = var.do_ssh_key_name
-  do_project_id = digitalocean_project.playground.id
 
   # These are the variables that are coming from the mosquitto module
   mosquitto_host     = module.mosquitto.mosquitto_host
@@ -248,11 +261,13 @@ module "chirpstack" {
 }
 
 module "loadbalancer" {
-  source = "./modules/loadbalancer"
-  do_project_id = digitalocean_project.playground.id
-  do_chirpstack_droplet_region = var.do_chirpstack_droplet_region
-  droplet_ids = module.chirpstack.chirpstack_droplet_ids
-  do_access_token = var.do_access_token
-  do_domain         = module.network.domain_name
-  domain_depends_on = module.network.domain_resource_id
+  source               = "./modules/loadbalancer"
+  gcp_project          = var.gcp_project
+  gcp_region           = var.gcp_region
+  gcp_credentials_file = var.gcp_credentials_file
+  gcp_dns_zone         = module.network.domain_name
+  gcp_target_proxy     = "" # TODO: configure target proxy
+  droplet_ids          = module.chirpstack.chirpstack_droplet_ids
+  do_domain            = module.network.domain_name
+  domain_depends_on    = module.network.domain_resource_id
 }

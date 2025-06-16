@@ -1,10 +1,26 @@
 
-variable "do_access_token" {
-  description = "Digital ocean access token"
+variable "gcp_project" {
+  description = "GCP project ID"
+  type        = string
+}
+variable "gcp_region" {
+  description = "GCP region"
+  type        = string
+}
+variable "gcp_credentials_file" {
+  description = "Path to the GCP service account JSON credentials"
+  type        = string
+}
+variable "gcp_dns_zone" {
+  description = "Name of the managed DNS zone"
   type        = string
 }
 variable "do_domain" {
   description = "Domain"
+  type        = string
+}
+variable "gcp_target_proxy" {
+  description = "Target proxy for forwarding rule"
   type        = string
 }
 variable "droplet_ids" {
@@ -28,70 +44,16 @@ variable "domain_depends_on" {
   default     = ""
 }
 
-provider "digitalocean" {
-  token = var.do_access_token
+provider "google" {
+  credentials = file(var.gcp_credentials_file)
+  project     = var.gcp_project
+  region      = var.gcp_region
 }
 
 #@tofuhub:connects_to->redis
-resource "digitalocean_loadbalancer" "chirpstack_lb" {
-  name   = "chirpstack-lb"
-  region = var.do_chirpstack_droplet_region
-  project_id = var.do_project_id
-
-  forwarding_rule {
-    entry_port     = 80
-    entry_protocol = "http"
-
-    target_port     = 8080
-    target_protocol = "http"
-  }
-
-  forwarding_rule {
-    entry_port     = 443
-    entry_protocol = "https"
-
-    target_port    = 8080
-    target_protocol = "http"
-
-    certificate_id = digitalocean_certificate.lns_tls.id
-  }
-
-  healthcheck {
-    protocol = "http"
-    port     = 8080
-    path     = "/"
-  }
-
-  redirect_http_to_https = true
-
-  # Not supported yet
-  # tls_passthrough = false
-
-  droplet_ids = var.droplet_ids
-}
-
-# Create a DNS record pointing to the load balancer
-resource "digitalocean_record" "chirpstack_dns" {
-  domain = var.do_domain
-  type   = "A"
-  name   = "lorawan"
-  value  = "1.1.1.1"  # Temporary dummy IP
-}
-
-resource "digitalocean_certificate" "lns_tls" {
-  name = "lns-cert"
-  type = "lets_encrypt"
-
-  depends_on = [digitalocean_record.chirpstack_dns]
-
-  domains = ["lorawan5.${var.do_domain}"]
-}
-
-resource "digitalocean_record" "chirpstack_dns_update" {
-  domain = var.do_domain
-  type   = "A"
-  name   = "lorawan"
-  value  = digitalocean_loadbalancer.chirpstack_lb.ip
-
-  depends_on = [digitalocean_certificate.lns_tls]
+# Placeholder for Google Cloud load balancer setup
+resource "google_compute_forwarding_rule" "chirpstack_lb" {
+  name       = "chirpstack-lb"
+  target     = var.gcp_target_proxy
+  port_range = "80-80"
 }

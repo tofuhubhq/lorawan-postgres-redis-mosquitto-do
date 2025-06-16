@@ -1,10 +1,15 @@
-variable "do_access_token" {
-  description = "Digital ocean access token"
+variable "gcp_project" {
+  description = "GCP project ID"
   type        = string
 }
 
-variable "do_project_id" {
-  description = "Digital ocean project id"
+variable "gcp_region" {
+  description = "GCP region"
+  type        = string
+}
+
+variable "gcp_credentials_file" {
+  description = "Path to the GCP service account JSON credentials"
   type        = string
 }
 
@@ -98,12 +103,10 @@ variable "redis_password" {
   type        = string
 }
 
-data "digitalocean_ssh_key" "my_key" {
-  name = var.do_ssh_key_name
-}
-
-provider "digitalocean" {
-  token = var.do_access_token
+provider "google" {
+  credentials = file(var.gcp_credentials_file)
+  project     = var.gcp_project
+  region      = var.gcp_region
 }
 
 # File for chirpstack configuration
@@ -124,21 +127,23 @@ resource "local_file" "ca_cert" {
 #@tofuhub:connects_to->postgres
 #@tofuhub:connects_to->redis
 #@tofuhub:connects_to->mosquitto
-resource "digitalocean_droplet" "chirpstack_nodes" {
-  count  = var.do_chirpstack_droplet_count
-  name   = "chirpstack-node-${count.index + 1}"
-  region = var.do_chirpstack_droplet_region
-  size   = var.do_chirpstack_droplet_size
-  image  = var.do_chirpstack_droplet_image
-  ssh_keys = [data.digitalocean_ssh_key.my_key.id]
+resource "google_compute_instance" "chirpstack_nodes" {
+  count        = var.do_chirpstack_droplet_count
+  name         = "chirpstack-node-${count.index + 1}"
+  machine_type = var.do_chirpstack_droplet_size
+  zone         = var.do_chirpstack_droplet_region
 
-  tags = ["chirpstack", "ssh"]
+  boot_disk {
+    initialize_params {
+      image = var.do_chirpstack_droplet_image
+    }
+  }
 
   connection {
     type        = "ssh"
     user        = "root"
     private_key = file(var.private_key_path)
-    host        = self.ipv4_address
+    host        = self.network_interface[0].access_config[0].nat_ip
   }
 
   # Need to create the directory first, since opentofu does funny stuff otherwise
@@ -190,43 +195,24 @@ resource "digitalocean_droplet" "chirpstack_nodes" {
   }
 }
 
-resource "digitalocean_project_resources" "assign_droplets" {
-  project = var.do_project_id
-  resources = [
-    for droplet in digitalocean_droplet.chirpstack_nodes : droplet.urn
-  ]
-}
 
 # Create the firewall.
-resource "digitalocean_firewall" "chirpstack_fw" {
-  name = "chirpstack-firewall"
+resource "google_compute_firewall" "chirpstack_fw" {
+  name    = "chirpstack-firewall"
+  network = var.gcp_network_self_link
 
-  tags = ["chirpstack"]
-
-  inbound_rule {
-    protocol         = "tcp"
-    port_range       = "8080"
-    source_addresses = ["0.0.0.0/0", "::/0"]
+  allow {
+    protocol = "tcp"
+    ports    = ["8080"]
   }
-  inbound_rule {
-    protocol         = "udp"
-    port_range       = "1700"
-    source_addresses = ["0.0.0.0/0", "::/0"]
+  allow {
+    protocol = "udp"
+    ports    = ["1700"]
   }
-
-  outbound_rule {
-    protocol           = "tcp"
-    port_range         = "all"
-    destination_addresses = ["0.0.0.0/0", "::/0"]
-  }
-
-  outbound_rule {
-    protocol           = "udp"
-    port_range         = "all"
-    destination_addresses = ["0.0.0.0/0", "::/0"]
-  }
+  direction     = "INGRESS"
+  source_ranges = ["0.0.0.0/0"]
 }
 
 output "chirpstack_droplet_ids" {
-  value = digitalocean_droplet.chirpstack_nodes[*].id
+  value = google_compute_instance.chirpstack_nodes[*].id
 }
