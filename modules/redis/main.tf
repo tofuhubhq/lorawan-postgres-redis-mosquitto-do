@@ -1,10 +1,20 @@
-variable "do_access_token" {
-  description = "Digital ocean access token"
+variable "gcp_project" {
+  description = "GCP project ID"
   type        = string
 }
 
-variable "do_project_id" {
-  description = "Digital ocean project id"
+variable "gcp_region" {
+  description = "GCP region"
+  type        = string
+}
+
+variable "gcp_credentials_file" {
+  description = "Path to the GCP service account JSON credentials"
+  type        = string
+}
+
+variable "gcp_network_self_link" {
+  description = "Self link of the VPC network"
   type        = string
 }
 variable "redis_droplet_size" {
@@ -34,26 +44,28 @@ variable "private_key_path" {
   type        = string
 }
 
-variable "do_ssh_key_name" {
-  description = "SSH key name for redis droplet"
-  type        = string
+
+provider "google" {
+  credentials = file(var.gcp_credentials_file)
+  project     = var.gcp_project
+  region      = var.gcp_region
 }
 
-provider "digitalocean" {
-  token = var.do_access_token
-}
 
-data "digitalocean_ssh_key" "redis_key" {
-  name = var.do_ssh_key_name
-}
+resource "google_compute_instance" "redis" {
+  name         = "redis"
+  machine_type = var.redis_droplet_size
+  zone         = var.redis_region
 
-resource "digitalocean_droplet" "redis" {
-  name   = "redis"
-  region = var.redis_region
-  size   = var.redis_droplet_size
-  image  = var.redis_droplet_image
-  ssh_keys = [data.digitalocean_ssh_key.redis_key.id]
-  tags     = ["redis", "ssh"]
+  boot_disk {
+    initialize_params {
+      image = var.redis_droplet_image
+    }
+  }
+
+  metadata = {
+    ssh-keys = "root:${file(var.private_key_path)}"
+  }
 
   connection {
     type        = "ssh"
@@ -70,32 +82,22 @@ resource "digitalocean_droplet" "redis" {
 }
 
 #@tofuhub:is_used_by->redis_resource
-resource "digitalocean_firewall" "redis_fw" {
-  name = "redis-firewall"
+resource "google_compute_firewall" "redis_fw" {
+  name    = "redis-firewall"
+  network = var.gcp_network_self_link
 
-  inbound_rule {
-    protocol         = "tcp"
-    port_range       = "6379"
-    source_addresses = ["0.0.0.0/0", "::/0"]
+  allow {
+    protocol = "tcp"
+    ports    = ["6379"]
   }
-
-  outbound_rule {
-    protocol              = "tcp"
-    port_range            = "all"
-    destination_addresses = ["0.0.0.0/0", "::/0"]
-  }
-
-  droplet_ids = [digitalocean_droplet.redis.id]
+  direction     = "INGRESS"
+  source_ranges = ["0.0.0.0/0"]
 }
 
 # Assigns the mosquitto droplet to the project
-resource "digitalocean_project_resources" "assign_redis_droplet" {
-  project = var.do_project_id
-  resources = [digitalocean_droplet.redis.urn]
-}
 
 output "redis_host" {
-  value = digitalocean_droplet.redis.ipv4_address
+  value = google_compute_instance.redis.network_interface[0].access_config[0].nat_ip
 }
 
 output "redis_port" {

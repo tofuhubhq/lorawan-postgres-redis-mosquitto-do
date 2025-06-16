@@ -1,21 +1,34 @@
-variable "do_access_token" {
-  description = "Digital ocean access token"
+variable "gcp_project" {
+  description = "GCP project ID"
+  type        = string
+}
+
+variable "gcp_region" {
+  description = "GCP region"
+  type        = string
+}
+
+variable "gcp_credentials_file" {
+  description = "Path to the GCP service account JSON credentials"
   type        = string
 }
 
 variable "do_vpc_region" {
-  description = "Digital ocean vpc region"
-  type        = string
-}
-
-variable "do_domain" {
-  description = "Digital ocean domain"
+  description = "(Deprecated) Digital Ocean VPC region"
   type        = string
   default     = ""
 }
 
-provider "digitalocean" {
-  token = var.do_access_token
+variable "do_domain" {
+  description = "Domain name"
+  type        = string
+  default     = ""
+}
+
+provider "google" {
+  credentials = file(var.gcp_credentials_file)
+  project     = var.gcp_project
+  region      = var.gcp_region
 }
 
 # Create the VPC. There is no need to assign it to the project,
@@ -24,46 +37,34 @@ provider "digitalocean" {
 #@tofuhub:protects->mosquitto
 #@tofuhub:protects->redis
 #@tofuhub:protects->postgres
-resource "digitalocean_vpc" "main" {
-  name     = "lorawan-vpc"
-  region   = var.do_vpc_region
+resource "google_compute_network" "main" {
+  name                    = "lorawan-vpc"
+  auto_create_subnetworks = true
 }
 
 # Create the domain
-resource "digitalocean_domain" "purus_domain" {
-  name = var.do_domain
-  # ip   = "203.0.113.10"  # Optional: sets an A record for root domain
+resource "google_dns_managed_zone" "purus_domain" {
+  name     = replace(var.do_domain, ".", "-")
+  dns_name = "${var.do_domain}."
 }
 
 # Create the SSH firewall
-resource "digitalocean_firewall" "ssh" {
-  name = "ssh-firewall"
+resource "google_compute_firewall" "ssh" {
+  name    = "ssh-firewall"
+  network = google_compute_network.main.name
 
-  tags = ["ssh"]
-
-  inbound_rule {
-    protocol         = "tcp"
-    port_range       = "22"
-    source_addresses = ["0.0.0.0/0", "::/0"]
+  direction = "INGRESS"
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
   }
-
-  outbound_rule {
-    protocol              = "tcp"
-    port_range            = "all"
-    destination_addresses = ["0.0.0.0/0", "::/0"]
-  }
-
-  outbound_rule {
-    protocol              = "udp"
-    port_range            = "all"
-    destination_addresses = ["0.0.0.0/0", "::/0"]
-  }
+  source_ranges = ["0.0.0.0/0"]
 }
 
 output "domain_name" {
-  value = digitalocean_domain.purus_domain.name
+  value = google_dns_managed_zone.purus_domain.dns_name
 }
 
 output "domain_resource_id" {
-  value = digitalocean_domain.purus_domain.id
+  value = google_dns_managed_zone.purus_domain.id
 }

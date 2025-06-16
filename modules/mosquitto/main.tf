@@ -1,10 +1,24 @@
-variable "do_access_token" {
-  description = "Digital ocean access token"
+variable "gcp_project" {
+  description = "GCP project ID"
   type        = string
 }
 
-variable "do_project_id" {
-  description = "Digital ocean project id"
+variable "gcp_region" {
+  description = "GCP region"
+  type        = string
+}
+
+variable "gcp_credentials_file" {
+  description = "Path to the GCP service account JSON credentials"
+  type        = string
+}
+variable "gcp_network_self_link" {
+  description = "Self link of the VPC network"
+  type        = string
+}
+
+variable "gcp_dns_zone" {
+  description = "Name of the managed DNS zone"
   type        = string
 }
 
@@ -49,33 +63,30 @@ variable "private_key_path" {
   type        = string
 }
 
-variable "do_ssh_key_name" {
-  description = "SSH key name"
-  type        = string
-}
-data "digitalocean_ssh_key" "my_key" {
-  name = var.do_ssh_key_name
-}
 
 # Provider
-provider "digitalocean" {
-  token = var.do_access_token
+provider "google" {
+  credentials = file(var.gcp_credentials_file)
+  project     = var.gcp_project
+  region      = var.gcp_region
 }
 
-resource "digitalocean_droplet" "mosquitto" {
-  name   = "mosquitto-broker"
-  region = var.do_mosquitto_region
-  size   = var.do_mosquitto_size
-  image  = var.do_mosquitto_image
-  ssh_keys = [data.digitalocean_ssh_key.my_key.id]
+resource "google_compute_instance" "mosquitto" {
+  name         = "mosquitto-broker"
+  machine_type = var.do_mosquitto_size
+  zone         = var.do_mosquitto_region
 
-  tags = ["mosquitto", "ssh"]
+  boot_disk {
+    initialize_params {
+      image = var.do_mosquitto_image
+    }
+  }
 
   connection {
     type        = "ssh"
     user        = "root"
     private_key = file(var.private_key_path)
-    host        = self.ipv4_address
+    host        = self.network_interface[0].access_config[0].nat_ip
   }
   provisioner "remote-exec" {
     inline = [
@@ -109,53 +120,32 @@ resource "digitalocean_droplet" "mosquitto" {
 }
 
 # Assigns the mosquitto droplet to the project
-resource "digitalocean_project_resources" "assign_mosquitto_droplet" {
-  project = var.do_project_id
-  resources = [digitalocean_droplet.mosquitto.urn]
-}
 
-resource "digitalocean_record" "mqtt" {
-  domain = var.do_domain                    # "yebomarketplace.com"
-  type   = "A"
-  name   = "mqtt"                           # This creates mqtt.yebomarketplace.com
-  value  = digitalocean_droplet.mosquitto.ipv4_address
+resource "google_dns_record_set" "mqtt" {
+  managed_zone = var.gcp_dns_zone
+  name         = "mqtt.${var.do_domain}."
+  type         = "A"
+  ttl          = 300
+  rrdatas      = [google_compute_instance.mosquitto.network_interface[0].access_config[0].nat_ip]
 }
 
 # Create the firewall. Unfortunately, opentofu do provider
 # does not support assignment using tags
-resource "digitalocean_firewall" "mosquitto_fw" {
-  name = "mosquitto-firewall"
+resource "google_compute_firewall" "mosquitto_fw" {
+  name    = "mosquitto-firewall"
+  network = var.gcp_network_self_link
 
-  tags = ["mosquitto"]
-
-  inbound_rule {
-    protocol         = "tcp"
-    port_range       = "1883"
-    source_addresses = ["0.0.0.0/0", "::/0"]
+  allow {
+    protocol = "tcp"
+    ports    = ["1883", "8883"]
   }
-
-  inbound_rule {
-    protocol         = "tcp"
-    port_range       = "8883"
-    source_addresses = ["0.0.0.0/0", "::/0"]
-  }
-
-  outbound_rule {
-    protocol           = "tcp"
-    port_range         = "all"
-    destination_addresses = ["0.0.0.0/0", "::/0"]
-  }
-
-  outbound_rule {
-    protocol           = "udp"
-    port_range         = "all"
-    destination_addresses = ["0.0.0.0/0", "::/0"]
-  }
+  direction     = "INGRESS"
+  source_ranges = ["0.0.0.0/0"]
 }
 
 # These are the outputs
 output "mosquitto_host" {
-  value = digitalocean_droplet.mosquitto.ipv4_address
+  value = google_compute_instance.mosquitto.network_interface[0].access_config[0].nat_ip
 }
 
 output "mosquitto_port" {
