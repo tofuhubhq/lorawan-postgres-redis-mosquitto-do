@@ -17,5 +17,9 @@ RUN apt-get update && apt-get install curl -y && curl --proto '=https' --tlsv1.2
 # Working directory where project gets mounted
 WORKDIR /app
 
-# Default command: run tofu apply
-CMD ['sh', '-c', 'tofu init -backend-config="path=/app/state/terraform.tfstate" && tofu apply -state=/app/state/terraform.tfstate -var-file=/app/vars/variables.tfvars -auto-approve']
+# Add entrypoint
+COPY entrypoint.sh .
+
+RUN chmod +x entrypoint.sh
+
+ENTRYPOINT ["./entrypoint.sh"]
