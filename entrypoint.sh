@@ -61,5 +61,6 @@ cat "$TFVARS_FILE"
 # Run OpenTofu in the /repo directory
 echo "🚀 Running OpenTofu..."
 cd "$TARGET_DIR"
-tofu init -backend-config="path=/app/state/terraform.tfstate"
-tofu apply -state=/app/state/terraform.tfstate -auto-approve
+tofu init -backend-config="path=$TARGET_DIR/state/terraform.tfstate"
+tofu plan
+tofu apply -state=$TARGET_DIR/state/terraform.tfstate -auto-approve
