@@ -70,9 +70,9 @@ echo "📤 Capturing outputs..."
 OUTPUT_JSON=$(tofu output -json)
 
 echo "📡 Sending outputs to runner container..."
-curl -X POST "${RUNNER_URL:-http://localhost:3030/state/vars}" \
-     -H "Content-Type: application/json" \
-     -d "$OUTPUT_JSON"
+curl --location 'http://host.docker.internal:3030/state/vars' \
+  --header 'Content-Type: application/json' \
+  --data "$OUTPUT_JSON"
 
 # Send outputs to the runner
 echo "📡 Sending outputs to runner container..."
