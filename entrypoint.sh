@@ -74,8 +74,3 @@ echo "$OUTPUT_JSON" | curl --location 'http://host.docker.internal:3030/state/va
   --header 'Content-Type: application/json' \
   --data-binary @-
 
-# Send outputs to the runner
-echo "📡 Sending outputs to runner container..."
-curl -X POST http://runner:8080/states/vars \
-     -H "Content-Type: application/json" \
-     -d "$OUTPUT_JSON"
