@@ -70,9 +70,9 @@ echo "📤 Capturing outputs..."
 OUTPUT_JSON=$(tofu output -json)
 
 echo "📡 Sending outputs to runner container..."
-curl --location 'http://host.docker.internal:3030/state/vars' \
+echo "$OUTPUT_JSON" | curl --location 'http://host.docker.internal:3030/state/vars' \
   --header 'Content-Type: application/json' \
-  --data "$OUTPUT_JSON"
+  --data-binary @-
 
 # Send outputs to the runner
 echo "📡 Sending outputs to runner container..."
