@@ -65,9 +65,14 @@ tofu init -backend-config="path=$TARGET_DIR/state/terraform.tfstate"
 tofu plan
 tofu apply -state=$TARGET_DIR/state/terraform.tfstate -auto-approve
 
-# Capture OpenTofu outputs
+# Extract outputs and send to runner
 echo "📤 Capturing outputs..."
 OUTPUT_JSON=$(tofu output -json)
+
+echo "📡 Sending outputs to runner container..."
+curl -X POST "${RUNNER_URL:-http://localhost:3030/state/vars}" \
+     -H "Content-Type: application/json" \
+     -d "$OUTPUT_JSON"
 
 # Send outputs to the runner
 echo "📡 Sending outputs to runner container..."
