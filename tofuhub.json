@@ -7,5 +7,6 @@
   "homepage": "https://tofuhub.co",
   "author": "Tommaso Girotto",
   "tags": ["lorawan", "iot", "postgres", "valkey"],
-  "license": "MIT"
+  "license": "MIT",
+  "type": "package"
 }
