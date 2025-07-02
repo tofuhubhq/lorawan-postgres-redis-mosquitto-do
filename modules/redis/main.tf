@@ -47,6 +47,8 @@ data "digitalocean_ssh_key" "redis_key" {
   name = var.do_ssh_key_name
 }
 
+
+
 resource "digitalocean_droplet" "redis" {
   name   = "redis"
   region = var.redis_region
