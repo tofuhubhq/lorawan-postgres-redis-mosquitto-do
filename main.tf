@@ -173,12 +173,12 @@ resource "digitalocean_project" "playground" {
   environment = "Development"
 }
 
-# module "network" {
-#   source = "./modules/network"
-#   do_access_token = var.do_access_token
-#   do_vpc_region  = var.do_vpc_region
-#   do_domain = var.do_domain
-# }
+module "network" {
+  source = "./modules/network"
+  do_access_token = var.do_access_token
+  do_vpc_region  = var.do_vpc_region
+  do_domain = var.do_domain
+}
 
 # module "redis" {
 #   source = "./modules/redis"
@@ -192,17 +192,17 @@ resource "digitalocean_project" "playground" {
 #   do_project_id = digitalocean_project.playground.id
 # }
 
-# module "postgres" {
-#   source = "./modules/postgres"
-#   do_access_token = var.do_access_token
-#   do_project_id     = digitalocean_project.playground.id
-#   do_db_name       = var.do_db_name
-#   do_db_engine     = var.do_db_engine
-#   do_db_version    = var.do_db_version
-#   do_db_size       = var.do_db_size
-#   do_db_region     = var.do_db_region
-#   do_db_node_count = var.do_db_node_count
-# }
+module "postgres" {
+  source = "./modules/postgres"
+  do_access_token = var.do_access_token
+  do_project_id     = digitalocean_project.playground.id
+  do_db_name       = var.do_db_name
+  do_db_engine     = var.do_db_engine
+  do_db_version    = var.do_db_version
+  do_db_size       = var.do_db_size
+  do_db_region     = var.do_db_region
+  do_db_node_count = var.do_db_node_count
+}
 # module "mosquitto" {
 #   source = "./modules/mosquitto"
 #   do_access_token = var.do_access_token
