@@ -96,6 +96,11 @@ variable "redis_password" {
   type        = string
 }
 
+variable "do_chirpstack_firewall_name" {
+  description = "Chirpstack firewall name"
+  type        = string
+}
+
 provider "digitalocean" {
   token = var.do_access_token
 }
@@ -193,7 +198,7 @@ resource "digitalocean_project_resources" "assign_droplets" {
 
 # Create the firewall.
 resource "digitalocean_firewall" "chirpstack_fw" {
-  name = "chirpstack-firewall"
+  name = var.do_chirpstack_firewall_name
 
   tags = ["chirpstack"]
 

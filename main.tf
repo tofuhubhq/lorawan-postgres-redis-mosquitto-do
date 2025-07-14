@@ -139,6 +139,11 @@ variable "do_chirpstack_droplet_region" {
   type        = string
 }
 
+variable "do_chirpstack_firewall_name" {
+  description = "Chirpstack firewall name"
+  type        = string
+}
+
 # redis
 variable "redis_droplet_size" {
   description = "Droplet size for redis"
@@ -276,6 +281,7 @@ module "chirpstack" {
   redis_password = module.redis.redis_password
   
   ca_certificate = module.postgres.ca_certificate
+  do_chirpstack_firewall_name = var.do_chirpstack_firewall_name
 }
 
 module "loadbalancer" {
