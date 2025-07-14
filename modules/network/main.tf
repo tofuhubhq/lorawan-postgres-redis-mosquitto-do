@@ -19,6 +19,12 @@ variable "do_domain" {
   default     = ""
 }
 
+variable "do_ssh_firewall_name" {
+  description = "Digital ocean ssh firewall name"
+  type        = string
+  default     = ""
+}
+
 provider "digitalocean" {
   token = var.do_access_token
 }
@@ -42,7 +48,7 @@ resource "digitalocean_domain" "purus_domain" {
 
 # Create the SSH firewall
 resource "digitalocean_firewall" "ssh" {
-  name = "ssh-firewall"
+  name = var.do_ssh_firewall_name
 
   tags = ["ssh"]
 

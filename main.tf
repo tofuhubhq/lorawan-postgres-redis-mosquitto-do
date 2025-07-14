@@ -46,6 +46,12 @@ variable "do_vpc_region" {
   type        = string
 }
 
+variable "do_ssh_firewall_name" {
+  description = "Digital ocean ssh firewall name"
+  type        = string
+  default     = ""
+}
+
 variable "do_db_name" {
   description = "Digital ocean db name"
   type        = string
@@ -77,6 +83,16 @@ variable "do_db_node_count" {
 }
 
 # Mosquitto vars
+
+variable "do_mosquitto_name" {
+  description = "Mosquitto broker name"
+  type        = string
+}
+
+variable "do_mosquitto_firewall_name" {
+  description = "Mosquitto firewall name"
+  type        = string
+}
 variable "do_mosquitto_region" {
   description = "Digital ocean mosquitto region"
   type        = string
@@ -130,6 +146,12 @@ variable "redis_droplet_size" {
   default     = "s-1vcpu-1gb"
 }
 
+variable "redis_droplet_name" {
+  description = "Name for redis Droplet"
+  type        = string
+  default     = ""
+}
+
 variable "redis_droplet_image" {
   description = "Image for redis Droplet"
   type        = string
@@ -146,6 +168,11 @@ variable "redis_password" {
   type        = string
 }
 
+variable "do_loadbalancer_name" {
+  description = "Digital ocean loadbalancer name"
+  type        = string
+  default     = ""
+}
 
 # SSH config
 variable "private_key_path" {
@@ -183,12 +210,14 @@ module "network" {
   do_vpc_name = var.do_vpc_name
   do_vpc_region  = var.do_vpc_region
   do_domain = var.do_domain
+  do_ssh_firewall_name = var.do_ssh_firewall_name
 }
 
 module "redis" {
   source = "./modules/redis"
   do_access_token = var.do_access_token
   do_ssh_key_name = var.do_ssh_key_name
+  redis_droplet_name = var.redis_droplet_name
   redis_droplet_size = var.redis_droplet_size
   redis_droplet_image = var.redis_droplet_image
   redis_region = var.redis_region
@@ -212,6 +241,7 @@ module "postgres" {
 module "mosquitto" {
   source = "./modules/mosquitto"
   do_access_token = var.do_access_token
+  do_mosquitto_name = var.do_mosquitto_name
   do_mosquitto_image = var.do_mosquitto_image
   do_mosquitto_size = var.do_mosquitto_size
   do_mosquitto_region = var.do_mosquitto_region
@@ -222,6 +252,7 @@ module "mosquitto" {
   mosquitto_config_path = "${path.module}/modules/mosquitto/mosquitto.conf"
   do_mosquitto_username = var.do_mosquitto_username
   do_mosquitto_password = var.do_mosquitto_password
+  do_mosquitto_firewall_name = var.do_mosquitto_firewall_name
 }
 
 module "chirpstack" {
@@ -255,6 +286,7 @@ module "chirpstack" {
 
 module "loadbalancer" {
   source = "./modules/loadbalancer"
+  do_loadbalancer_name = var.do_loadbalancer_name
   do_project_id = digitalocean_project.playground.id
   do_chirpstack_droplet_region = var.do_chirpstack_droplet_region
   droplet_ids = module.chirpstack.chirpstack_droplet_ids

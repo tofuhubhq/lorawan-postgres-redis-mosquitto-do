@@ -33,6 +33,16 @@ variable "do_mosquitto_password" {
   type        = string
 }
 
+variable "do_mosquitto_name" {
+  description = "Mosquitto broker name"
+  type        = string
+}
+
+variable "do_mosquitto_firewall_name" {
+  description = "Mosquitto firewall name"
+  type        = string
+}
+
 variable "do_domain" {
   description = "Digital ocean domain"
   type        = string
@@ -63,7 +73,7 @@ provider "digitalocean" {
 }
 
 resource "digitalocean_droplet" "mosquitto" {
-  name   = "mosquitto-broker"
+  name   = var.do_mosquitto_name
   region = var.do_mosquitto_region
   size   = var.do_mosquitto_size
   image  = var.do_mosquitto_image
@@ -124,7 +134,7 @@ resource "digitalocean_record" "mqtt" {
 # Create the firewall. Unfortunately, opentofu do provider
 # does not support assignment using tags
 resource "digitalocean_firewall" "mosquitto_fw" {
-  name = "mosquitto-firewall"
+  name = var.do_mosquitto_firewall_name
 
   tags = ["mosquitto"]
 

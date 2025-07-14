@@ -22,6 +22,12 @@ variable "do_chirpstack_droplet_region" {
   default     = ""
 }
 
+variable "do_loadbalancer_name" {
+  description = "Digital ocean loadbalancer name"
+  type        = string
+  default     = ""
+}
+
 variable "domain_depends_on" {
   description = "Dummy variable to enforce domain creation order"
   type        = string
@@ -34,7 +40,7 @@ provider "digitalocean" {
 
 #@tofuhub:connects_to->chirpstack_nodes
 resource "digitalocean_loadbalancer" "chirpstack_lb" {
-  name   = "chirpstack-lb"
+  name   = var.do_loadbalancer_name
   region = var.do_chirpstack_droplet_region
   project_id = var.do_project_id
 

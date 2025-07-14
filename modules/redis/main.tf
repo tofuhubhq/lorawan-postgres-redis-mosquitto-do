@@ -13,6 +13,12 @@ variable "redis_droplet_size" {
   default     = ""
 }
 
+variable "redis_droplet_name" {
+  description = "Name for redis Droplet"
+  type        = string
+  default     = ""
+}
+
 variable "redis_droplet_image" {
   description = "Image for redis Droplet"
   type        = string
@@ -50,7 +56,7 @@ data "digitalocean_ssh_key" "redis_key" {
 
 
 resource "digitalocean_droplet" "redis" {
-  name   = "redis"
+  name   = var.redis_droplet_name
   region = var.redis_region
   size   = var.redis_droplet_size
   image  = var.redis_droplet_image
