@@ -53,7 +53,9 @@ for var in "${vars[@]}"; do
   val="${!var}"
 
   if [[ -n "$val" ]]; then
-    if [[ "$val" =~ ^[0-9]+$ ]]; then
+    if [[ "$var" == "do_ssh_key_ids" ]]; then
+      echo "$var = [\"$val\"]" >> "$TFVARS_FILE"
+    elif [[ "$val" =~ ^[0-9]+$ ]]; then
       echo "$var = $val" >> "$TFVARS_FILE"
     else
       echo "$var = \"$val\"" >> "$TFVARS_FILE"
