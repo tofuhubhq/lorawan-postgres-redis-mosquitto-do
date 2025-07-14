@@ -18,26 +18,32 @@ vars=(
   do_project_name
   do_project_description
   do_vpc_region
+  do_vpc_name
+  do_ssh_firewall_name
   do_db_name
   do_db_engine
   do_db_version
   do_db_size
   do_db_region
   do_db_node_count
+  do_mosquitto_name
   do_mosquitto_region
   do_mosquitto_size
   do_mosquitto_image
   do_mosquitto_username
   do_mosquitto_password
+  do_mosquitto_firewall_name
   do_chirpstack_droplet_count
   do_chirpstack_droplet_size
   do_chirpstack_droplet_image
   do_chirpstack_droplet_region
   do_ssh_key_name
+  redis_droplet_name
   redis_droplet_size
   redis_droplet_image
   redis_region
   redis_password
+  do_loadbalancer_name
 )
 
 # Generate the tfvars file
