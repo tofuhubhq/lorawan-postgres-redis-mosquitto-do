@@ -44,6 +44,8 @@ vars=(
   redis_region
   redis_password
   do_loadbalancer_name
+  do_ssh_key_ids
+  private_key_path
 )
 
 # Generate the tfvars file

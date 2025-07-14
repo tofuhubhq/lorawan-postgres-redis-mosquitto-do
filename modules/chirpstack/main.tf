@@ -83,11 +83,9 @@ variable "private_key_path" {
   type        = string
 }
 
-variable "do_ssh_key_name" {
-  description = "SSH key name"
-  type        = string
+variable "do_ssh_key_ids" {
+  type = list(string)
 }
-
 variable "redis_host" {
   description = "SSH key name"
   type        = string
@@ -96,10 +94,6 @@ variable "redis_host" {
 variable "redis_password" {
   description = "SSH key name"
   type        = string
-}
-
-data "digitalocean_ssh_key" "my_key" {
-  name = var.do_ssh_key_name
 }
 
 provider "digitalocean" {
@@ -130,7 +124,7 @@ resource "digitalocean_droplet" "chirpstack_nodes" {
   region = var.do_chirpstack_droplet_region
   size   = var.do_chirpstack_droplet_size
   image  = var.do_chirpstack_droplet_image
-  ssh_keys = [data.digitalocean_ssh_key.my_key.id]
+  ssh_keys = var.do_ssh_key_ids
 
   tags = ["chirpstack", "ssh"]
 

@@ -35,32 +35,24 @@ variable "redis_password" {
   type        = string
 }
 
-variable "private_key_path" {
-  description = "Path to your SSH private key"
-  type        = string
+variable "do_ssh_key_ids" {
+  type = list(string)
 }
 
-variable "do_ssh_key_name" {
-  description = "SSH key name for redis droplet"
+variable "private_key_path" {
+  description = "Path to your SSH private key"
   type        = string
 }
 
 provider "digitalocean" {
   token = var.do_access_token
 }
-
-data "digitalocean_ssh_key" "redis_key" {
-  name = var.do_ssh_key_name
-}
-
-
-
 resource "digitalocean_droplet" "redis" {
   name   = var.redis_droplet_name
   region = var.redis_region
   size   = var.redis_droplet_size
   image  = var.redis_droplet_image
-  ssh_keys = [data.digitalocean_ssh_key.redis_key.id]
+  ssh_keys = var.do_ssh_key_ids
   tags     = ["redis", "ssh"]
 
   connection {

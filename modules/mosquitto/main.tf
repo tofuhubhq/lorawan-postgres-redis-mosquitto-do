@@ -59,12 +59,8 @@ variable "private_key_path" {
   type        = string
 }
 
-variable "do_ssh_key_name" {
-  description = "SSH key name"
-  type        = string
-}
-data "digitalocean_ssh_key" "my_key" {
-  name = var.do_ssh_key_name
+variable "do_ssh_key_ids" {
+  type = list(string)
 }
 
 # Provider
@@ -77,7 +73,7 @@ resource "digitalocean_droplet" "mosquitto" {
   region = var.do_mosquitto_region
   size   = var.do_mosquitto_size
   image  = var.do_mosquitto_image
-  ssh_keys = [data.digitalocean_ssh_key.my_key.id]
+  ssh_keys = var.do_ssh_key_ids
 
   tags = ["mosquitto", "ssh"]
 

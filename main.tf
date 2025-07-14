@@ -174,20 +174,14 @@ variable "do_loadbalancer_name" {
   default     = ""
 }
 
-# SSH config
+variable "do_ssh_key_ids" {
+  type = list(string)
+  default = []
+}
+
 variable "private_key_path" {
-  description = "Path to your private SSH key"
+  description = "Path to your SSH private key"
   type        = string
-  default     = "~/.ssh/id_rsa"
-}
-
-variable "do_ssh_key_name" {
-  description = "SSH key name"
-  type        = string
-}
-
-data "digitalocean_ssh_key" "my_key" {
-  name = var.do_ssh_key_name
 }
 
 # Providers
@@ -216,7 +210,7 @@ module "network" {
 module "redis" {
   source = "./modules/redis"
   do_access_token = var.do_access_token
-  do_ssh_key_name = var.do_ssh_key_name
+  do_ssh_key_ids = var.do_ssh_key_ids
   redis_droplet_name = var.redis_droplet_name
   redis_droplet_size = var.redis_droplet_size
   redis_droplet_image = var.redis_droplet_image
@@ -241,13 +235,13 @@ module "postgres" {
 module "mosquitto" {
   source = "./modules/mosquitto"
   do_access_token = var.do_access_token
+  do_ssh_key_ids = var.do_ssh_key_ids
   do_mosquitto_name = var.do_mosquitto_name
   do_mosquitto_image = var.do_mosquitto_image
   do_mosquitto_size = var.do_mosquitto_size
   do_mosquitto_region = var.do_mosquitto_region
   private_key_path = var.private_key_path
   do_project_id = digitalocean_project.playground.id
-  do_ssh_key_name = var.do_ssh_key_name
   do_domain = var.do_domain
   mosquitto_config_path = "${path.module}/modules/mosquitto/mosquitto.conf"
   do_mosquitto_username = var.do_mosquitto_username
@@ -257,13 +251,13 @@ module "mosquitto" {
 
 module "chirpstack" {
   source = "./modules/chirpstack"
+  do_ssh_key_ids = var.do_ssh_key_ids
   do_access_token = var.do_access_token
   do_chirpstack_droplet_count = var.do_chirpstack_droplet_count
   do_chirpstack_droplet_size = var.do_chirpstack_droplet_size
   do_chirpstack_droplet_image = var.do_chirpstack_droplet_image
   do_chirpstack_droplet_region = var.do_chirpstack_droplet_region
   private_key_path = var.private_key_path
-  do_ssh_key_name = var.do_ssh_key_name
   do_project_id = digitalocean_project.playground.id
 
   # These are the variables that are coming from the mosquitto module
