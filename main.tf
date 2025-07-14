@@ -37,6 +37,10 @@ variable "do_project_description" {
   default     = ""
 }
 
+variable "do_vpc_name" {
+  description = "Digital ocean vpc name"
+  type        = string
+}
 variable "do_vpc_region" {
   description = "Digital ocean vpc region"
   type        = string
@@ -176,6 +180,7 @@ resource "digitalocean_project" "playground" {
 module "network" {
   source = "./modules/network"
   do_access_token = var.do_access_token
+  do_vpc_name = var.do_vpc_name
   do_vpc_region  = var.do_vpc_region
   do_domain = var.do_domain
 }

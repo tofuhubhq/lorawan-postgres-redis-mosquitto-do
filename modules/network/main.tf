@@ -3,6 +3,11 @@ variable "do_access_token" {
   type        = string
 }
 
+variable "do_vpc_name" {
+  description = "Digital ocean vpc name"
+  type        = string
+}
+
 variable "do_vpc_region" {
   description = "Digital ocean vpc region"
   type        = string
@@ -25,7 +30,7 @@ provider "digitalocean" {
 #@tofuhub:protects->redis
 #@tofuhub:protects->postgres
 resource "digitalocean_vpc" "main" {
-  name     = "lorawan-vpc"
+  name     = var.do_vpc_name
   region   = var.do_vpc_region
 }
 
