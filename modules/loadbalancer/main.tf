@@ -90,7 +90,7 @@ resource "digitalocean_certificate" "lns_tls" {
 
   depends_on = [digitalocean_record.chirpstack_dns]
 
-  domains = ["lorawan5.${var.do_domain}"]
+  domains = ["lorawan6.${var.do_domain}"]
 }
 
 resource "digitalocean_record" "chirpstack_dns_update" {
