@@ -164,27 +164,85 @@ resource "digitalocean_droplet" "chirpstack_nodes" {
   #   destination = "/var/chirpstack/chirpstack-gateway-bridge.env"
   # }
   provisioner "remote-exec" {
-    # to persist data.
     inline = [
-      "apt-get update -y",
-      "apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release git",
-      
-      # Install Docker
-      "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg",
-      "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" > /etc/apt/sources.list.d/docker.list",
-      "apt-get update -y",
-      "apt-get install -y docker-ce docker-ce-cli containerd.io",
+      <<-EOT
+        bash -c 'set -eux
 
-      # Install legacy docker-compose (hyphen version)
-      "curl -L \"https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)\" -o /usr/local/bin/docker-compose",
-      "chmod +x /usr/local/bin/docker-compose",
-      "ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose",
+        export DEBIAN_FRONTEND=noninteractive
+        export NEEDRESTART_MODE=a
 
-      # Clone Chirpstack
-      "git clone https://github.com/tofuhubhq/chirpstack-docker.git /opt/chirpstack",
+        echo "⏳ Waiting for dpkg lock"
+        for i in {1..20}; do
+          fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || break
+          echo "🔒 apt lock held, waiting 3s..."
+          sleep 3
+        done
 
-      # Start containers
-      "cd /opt/chirpstack && docker-compose up --build -d"
+        echo "🔁 apt-get update"
+        for i in {1..5}; do
+          apt-get update -y && break || {
+            echo "❌ apt-get update failed, retrying..."
+            sleep 5
+          }
+        done
+
+        echo "📦 Installing Docker dependencies"
+        for i in {1..5}; do
+          apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release git && break || {
+            echo "❌ apt install failed, retrying..."
+            sleep 5
+          }
+        done
+
+        echo "🔑 Adding Docker GPG key"
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor \
+          -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+        echo "📋 Adding Docker repo"
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \
+        https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
+        | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+        echo "🔁 apt-get update (Docker repo)"
+        for i in {1..5}; do
+          apt-get update -y && break || {
+            echo "❌ apt-get update (docker) failed, retrying..."
+            sleep 5
+          }
+        done
+
+        echo "🐳 Installing Docker"
+        for i in {1..5}; do
+          apt-get install -y docker-ce docker-ce-cli containerd.io && break || {
+            echo "❌ Docker install failed, retrying..."
+            sleep 5
+          }
+        done
+
+        echo "🧩 Enabling Docker service"
+        systemctl enable docker
+        systemctl start docker
+
+        echo "🔧 Installing legacy docker-compose"
+        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
+        ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+        echo "📥 Cloning ChirpStack"
+        git clone https://github.com/tofuhubhq/chirpstack-docker.git /opt/chirpstack
+
+        echo "⏳ Waiting for Docker daemon to be ready..."
+        for i in {1..20}; do
+          docker info >/dev/null 2>&1 && break
+          echo "🐋 Docker not ready yet, retrying in 3s..."
+          sleep 3
+        done
+
+        echo "🚀 Starting ChirpStack via docker-compose"
+        cd /opt/chirpstack
+        docker-compose up --build -d
+        '
+      EOT
     ]
   }
 }

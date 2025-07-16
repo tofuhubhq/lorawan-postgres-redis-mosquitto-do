@@ -85,26 +85,46 @@ resource "digitalocean_droplet" "mosquitto" {
   }
   provisioner "remote-exec" {
     inline = [
-      "set -euo pipefail",
-      "export DEBIAN_FRONTEND=noninteractive",
+      <<-EOT
+        bash -c 'set -euxo pipefail
 
-      # Retry apt to avoid lock errors
-      "for i in {1..5}; do apt update -y && apt install -y mosquitto && break || sleep 5; done",
+        export DEBIAN_FRONTEND=noninteractive
+        export NEEDRESTART_MODE=a
 
-      # Ensure mosquitto is installed and its dir exists
-      "[ -d /etc/mosquitto ] || (echo 'Mosquitto dir missing' && exit 1)",
+        echo "⏳ Waiting for apt/dpkg locks to release..."
+        for i in {1..20}; do
+          lsof /var/lib/dpkg/lock || lsof /var/lib/apt/lists/lock || break
+          echo "🔒 apt lock held, waiting 3s..."
+          sleep 3
+        done
 
-      # Create password file
-      "mosquitto_passwd -b -c /etc/mosquitto/passwd '${var.do_mosquitto_username}' '${var.do_mosquitto_password}'",
+        echo "🔁 Retrying apt update"
+        for i in {1..5}; do
+          apt update -y && break || {
+            echo "❌ apt update failed, retrying in 5s..."
+            sleep 5
+          }
+        done
 
-      # Add config file for password auth
-      "echo 'allow_anonymous false' > /etc/mosquitto/conf.d/auth.conf",
-      "echo 'password_file /etc/mosquitto/passwd' >> /etc/mosquitto/conf.d/auth.conf",
+        echo "🔁 Retrying apt install (mosquitto)"
+        for i in {1..5}; do
+          apt install -y mosquitto && break || {
+            echo "❌ apt install failed, retrying in 5s..."
+            sleep 5
+          }
+        done
 
-      # Reload or restart Mosquitto cleanly
-      "systemctl daemon-reexec",
-      "systemctl restart mosquitto",
-      "systemctl enable mosquitto"
+        echo "🔐 Configuring Mosquitto"
+        mosquitto_passwd -b -c /etc/mosquitto/passwd "${var.do_mosquitto_username}" "${var.do_mosquitto_password}"
+        echo "allow_anonymous false" > /etc/mosquitto/conf.d/auth.conf
+        echo "password_file /etc/mosquitto/passwd" >> /etc/mosquitto/conf.d/auth.conf
+
+        echo "🚀 Restarting Mosquitto"
+        systemctl daemon-reexec
+        systemctl restart mosquitto
+        systemctl enable mosquitto
+        '
+      EOT
     ]
   }
 

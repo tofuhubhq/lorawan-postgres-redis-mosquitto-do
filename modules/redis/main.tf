@@ -53,6 +53,7 @@ resource "digitalocean_droplet" "redis" {
   size   = var.redis_droplet_size
   image  = var.redis_droplet_image
   ssh_keys = var.do_ssh_key_ids
+
   tags     = ["redis", "ssh"]
 
   connection {
@@ -63,8 +64,50 @@ resource "digitalocean_droplet" "redis" {
   }
 
   provisioner "remote-exec" {
-  inline = [
-    "bash -c 'set -eux && while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do echo \"Waiting for apt lock...\"; sleep 3; done && apt-get update -y || true && apt-get install -y redis-server && sed -i \"s/^#\\?\\s*bind .*/bind 0.0.0.0/\" /etc/redis/redis.conf && sed -i \"s/^#\\?\\s*protected-mode .*/protected-mode no/\" /etc/redis/redis.conf && sed -i \"s/^#\\?\\s*requirepass .*/requirepass ${var.redis_password}/\" /etc/redis/redis.conf && systemctl enable redis-server && systemctl restart redis-server'"
+    inline = [
+      <<-EOT
+        bash -c 'set -eux
+
+        export DEBIAN_FRONTEND=noninteractive
+        export NEEDRESTART_MODE=a
+
+        wait_for_apt() {
+          echo "⏳ Waiting for APT lock to be released..."
+          while fuser /var/lib/dpkg/lock >/dev/null 2>&1 || \
+                fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || \
+                fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+            echo "🔒 APT lock still held, waiting 3s..."
+            sleep 3
+          done
+          echo "✅ APT lock released"
+        }
+
+        wait_for_apt
+
+        for i in {1..5}; do
+          apt-get update -y && break || {
+            echo "❌ apt-get update failed, retrying in 5s..."
+            sleep 5
+            wait_for_apt
+          }
+        done
+
+        for i in {1..5}; do
+          apt-get install -y redis-server && break || {
+            echo "❌ apt-get install failed, retrying in 5s..."
+            sleep 5
+            wait_for_apt
+          }
+        done
+
+        sed -i "s/^#\\?\\s*bind .*/bind 0.0.0.0/" /etc/redis/redis.conf
+        sed -i "s/^#\\?\\s*protected-mode .*/protected-mode no/" /etc/redis/redis.conf
+        sed -i "s/^#\\?\\s*requirepass .*/requirepass ${var.redis_password}/" /etc/redis/redis.conf
+
+        systemctl enable redis-server
+        systemctl restart redis-server
+        '
+      EOT
     ]
   }
 }

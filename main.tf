@@ -179,6 +179,12 @@ variable "do_loadbalancer_name" {
   default     = ""
 }
 
+variable "do_lorawan_subdomain" {
+  description = "Lorawan subdomain"
+  type        = string
+  default     = ""
+}
+
 variable "do_ssh_key_ids" {
   type = list(string)
   default = []
@@ -286,6 +292,7 @@ module "chirpstack" {
 
 module "loadbalancer" {
   source = "./modules/loadbalancer"
+  do_lorawan_subdomain = var.do_lorawan_subdomain
   do_loadbalancer_name = var.do_loadbalancer_name
   do_project_id = digitalocean_project.playground.id
   do_chirpstack_droplet_region = var.do_chirpstack_droplet_region

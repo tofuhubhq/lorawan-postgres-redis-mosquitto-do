@@ -34,6 +34,12 @@ variable "domain_depends_on" {
   default     = ""
 }
 
+variable "do_lorawan_subdomain" {
+  description = "Lorawan subdomain"
+  type        = string
+  default     = ""
+}
+
 provider "digitalocean" {
   token = var.do_access_token
 }
@@ -80,7 +86,7 @@ resource "digitalocean_loadbalancer" "chirpstack_lb" {
 resource "digitalocean_record" "chirpstack_dns" {
   domain = var.do_domain
   type   = "A"
-  name   = "lorawan"
+  name   = var.do_lorawan_subdomain
   value  = "1.1.1.1"  # Temporary dummy IP
 }
 
@@ -90,13 +96,13 @@ resource "digitalocean_certificate" "lns_tls" {
 
   depends_on = [digitalocean_record.chirpstack_dns]
 
-  domains = ["lorawan6.${var.do_domain}"]
+  domains = ["${var.do_lorawan_subdomain}.${var.do_domain}"]
 }
 
 resource "digitalocean_record" "chirpstack_dns_update" {
   domain = var.do_domain
   type   = "A"
-  name   = "lorawan"
+  name   = var.do_lorawan_subdomain
   value  = digitalocean_loadbalancer.chirpstack_lb.ip
 
   depends_on = [digitalocean_certificate.lns_tls]

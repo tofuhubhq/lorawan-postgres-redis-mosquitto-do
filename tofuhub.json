@@ -6,244 +6,474 @@
   "commit": "1a5045b6ac065cbade6e705c2e74b4b87c08b559",
   "homepage": "https://tofuhub.co",
   "author": "Tommaso Girotto",
-  "tags": ["lorawan", "iot", "postgres", "valkey"],
+  "tags": [
+    "lorawan",
+    "iot",
+    "postgres",
+    "valkey"
+  ],
   "license": "MIT",
   "type": "package",
   "inputs": {
-    "do_domain": {
-      "type": "string",
-      "required": false,
-      "default": "",
-      "description": "DigitalOcean domain",
-      "primitive": "domain",
-      "provider": "digitalocean"
-    },
-    "do_access_token": {
-      "type": "string",
-      "required": false,
-      "default": "",
-      "description": "DigitalOcean access token",
-      "primitive": "access_token",
-      "provider": "digitalocean",
-      "secret": true
-    },
-    "do_project_name": {
-      "type": "string",
-      "required": false,
-      "default": "",
-      "description": "DigitalOcean project name",
-      "primitive": "project",
-      "provider": "digitalocean"
-    },
-    "do_project_description": {
-      "type": "string",
-      "required": false,
-      "default": "",
-      "description": "DigitalOcean project description",
-      "primitive": "project_description",
-      "provider": "digitalocean"
-    },
-    "do_vpc_name": {
-      "type": "string",
-      "required": true,
-      "description": "DigitalOcean VPC name",
-      "primitive": "vpc",
-      "provider": "digitalocean"
-    },
-    "do_vpc_region": {
-      "type": "string",
-      "required": true,
-      "description": "DigitalOcean VPC region",
-      "primitive": "region",
-      "provider": "digitalocean"
-    },
-    "do_ssh_firewall_name": {
-      "type": "string",
-      "required": true,
-      "description": "Firewall name for SSH access",
-      "primitive": "firewall",
-      "provider": "digitalocean"
-    },
-    "do_db_name": {
-      "type": "string",
-      "required": true,
-      "description": "Database name",
-      "primitive": "database",
-      "provider": "digitalocean"
-    },
-    "do_db_engine": {
-      "type": "string",
-      "required": true,
-      "description": "Database engine",
-      "primitive": "database_engine",
-      "provider": "digitalocean"
-    },
-    "do_db_version": {
-      "type": "string",
-      "required": true,
-      "description": "Database version",
-      "primitive": "database_version",
-      "provider": "digitalocean"
-    },
-    "do_db_size": {
-      "type": "string",
-      "required": true,
-      "description": "Database size",
-      "primitive": "size",
-      "provider": "digitalocean"
-    },
-    "do_db_region": {
-      "type": "string",
-      "required": true,
-      "description": "Database region",
-      "primitive": "region",
-      "provider": "digitalocean"
-    },
-    "do_db_node_count": {
-      "type": "number",
-      "required": true,
-      "description": "Number of database nodes",
-      "primitive": "count",
-      "provider": "digitalocean"
-    },
-    "do_mosquitto_name": {
-      "type": "string",
-      "required": true,
-      "description": "Name for the Mosquitto droplet",
-      "primitive": "name",
-      "provider": "digitalocean"
-    },
-    "do_mosquitto_firewall_name": {
-      "type": "string",
-      "required": true,
-      "description": "Firewall name for Mosquitto",
-      "primitive": "firewall",
-      "provider": "digitalocean"
-    },
-    "do_mosquitto_region": {
-      "type": "string",
-      "required": true,
-      "description": "Mosquitto region",
-      "primitive": "region",
-      "provider": "digitalocean"
-    },
-    "do_mosquitto_image": {
-      "type": "string",
-      "required": true,
-      "description": "Image for Mosquitto droplet",
-      "primitive": "image",
-      "provider": "digitalocean"
-    },
-    "do_mosquitto_size": {
-      "type": "string",
-      "required": true,
-      "description": "Size of Mosquitto droplet",
-      "primitive": "size",
-      "provider": "digitalocean"
-    },
-    "do_mosquitto_username": {
-      "type": "string",
-      "required": true,
-      "description": "Mosquitto username",
-      "primitive": "username",
-      "provider": "digitalocean"
-    },
-    "do_mosquitto_password": {
-      "type": "string",
-      "required": true,
-      "description": "Mosquitto password",
-      "primitive": "password",
-      "provider": "digitalocean",
-      "secret": true
-    },
-    "do_chirpstack_droplet_count": {
-      "type": "number",
-      "required": true,
-      "description": "Number of ChirpStack droplets",
-      "primitive": "count",
-      "provider": "digitalocean"
-    },
-    "do_chirpstack_droplet_size": {
-      "type": "string",
-      "required": true,
-      "description": "ChirpStack droplet size",
-      "primitive": "size",
-      "provider": "digitalocean"
-    },
-    "do_chirpstack_droplet_image": {
-      "type": "string",
-      "required": true,
-      "description": "ChirpStack image",
-      "primitive": "image",
-      "provider": "digitalocean"
-    },
-    "do_chirpstack_droplet_region": {
-      "type": "string",
-      "required": true,
-      "description": "ChirpStack region",
-      "primitive": "region",
-      "provider": "digitalocean"
-    },
-    "redis_droplet_name": {
-      "type": "string",
-      "required": true,
-      "default": "redis",
-      "description": "Name for Redis droplet",
-      "primitive": "name",
-      "provider": "digitalocean"
-    },
-    "redis_droplet_size": {
-      "type": "string",
-      "required": true,
-      "default": "s-1vcpu-1gb",
-      "description": "Size for Redis droplet",
-      "primitive": "size",
-      "provider": "digitalocean"
-    },
-    "redis_droplet_image": {
-      "type": "string",
-      "required": true,
-      "default": "ubuntu-22-04-x64",
-      "description": "Image for Redis droplet",
-      "primitive": "image",
-      "provider": "digitalocean"
-    },
-    "redis_region": {
-      "type": "string",
-      "required": true,
-      "description": "Region for Redis droplet",
-      "primitive": "region",
-      "provider": "digitalocean"
-    },
-    "redis_password": {
-      "type": "string",
-      "required": true,
-      "description": "Password for Redis",
-      "primitive": "password",
-      "provider": "digitalocean",
-      "secret": true
-    },
-    "do_loadbalancer_name": {
-      "type": "string",
-      "required": true,
-      "description": "Name of the load balancer",
-      "primitive": "name",
-      "provider": "digitalocean"
-    },
-    "do_ssh_key_name": {
-      "type": "string",
-      "required": true,
-      "description": "SSH key name",
-      "primitive": "ssh_key_name",
-      "provider": "digitalocean"
-    },
-    "private_key_path": {
-      "type": "string",
-      "required": false,
-      "default": "~/.ssh/id_rsa",
-      "description": "Path to your private SSH key",
-      "primitive": "file_path",
-      "provider": "digitalocean"
+    "inputs": {
+      "do_domain": {
+        "type": "string",
+        "default": "yebomarketplace.com",
+        "provider": "digitalocean",
+        "required": false,
+        "primitive": "domain",
+        "description": "DigitalOcean domain"
+      },
+      "do_db_name": {
+        "type": "string",
+        "provider": "digitalocean",
+        "required": true,
+        "default": "lorawan-db",
+        "primitive": "database",
+        "description": "Database name"
+      },
+      "do_db_size": {
+        "type": "string",
+        "options": [
+          {
+            "label": "Basic - 1vCPU / 1GB RAM",
+            "value": "s-1vcpu-1gb"
+          },
+          {
+            "label": "Basic - 1vCPU / 2GB RAM",
+            "value": "s-1vcpu-2gb"
+          },
+          {
+            "label": "Basic - 2vCPU / 2GB RAM",
+            "value": "s-2vcpu-2gb"
+          },
+          {
+            "label": "Premium - 2vCPU / 4GB RAM",
+            "value": "s-2vcpu-4gb"
+          }
+        ],
+        "provider": "digitalocean",
+        "required": true,
+        "primitive": "size",
+        "description": "Database size"
+      },
+      "do_vpc_name": {
+        "type": "string",
+        "provider": "digitalocean",
+        "default": "lorawan-vpc",
+        "required": true,
+        "primitive": "vpc",
+        "description": "DigitalOcean VPC name"
+      },
+      "do_db_engine": {
+        "type": "string",
+        "options": [
+          {
+            "label": "PostgreSQL",
+            "value": "pg"
+          }
+        ],
+        "provider": "digitalocean",
+        "required": true,
+        "primitive": "database_engine",
+        "description": "Database engine"
+      },
+      "do_db_region": {
+        "type": "string",
+        "options": [
+          {
+            "label": "Frankfurt (EU Central)",
+            "value": "fra1"
+          },
+          {
+            "label": "New York (US East)",
+            "value": "nyc3"
+          },
+          {
+            "label": "San Francisco (US West)",
+            "value": "sfo3"
+          },
+          {
+            "label": "Amsterdam (EU West)",
+            "value": "ams3"
+          }
+        ],
+        "provider": "digitalocean",
+        "required": true,
+        "primitive": "region",
+        "description": "Database region"
+      },
+      "redis_region": {
+        "type": "string",
+        "options": [
+          {
+            "label": "Frankfurt (EU Central)",
+            "value": "fra1"
+          },
+          {
+            "label": "New York (US East)",
+            "value": "nyc3"
+          },
+          {
+            "label": "San Francisco (US West)",
+            "value": "sfo3"
+          },
+          {
+            "label": "Amsterdam (EU West)",
+            "value": "ams3"
+          }
+        ],
+        "provider": "digitalocean",
+        "required": true,
+        "primitive": "region",
+        "description": "Region for Redis droplet"
+      },
+      "do_db_version": {
+        "type": "string",
+        "options": [
+          {
+            "label": "PostgreSQL 15",
+            "value": "15"
+          }
+        ],
+        "provider": "digitalocean",
+        "required": true,
+        "primitive": "database_version",
+        "description": "Database version"
+      },
+      "do_vpc_region": {
+        "type": "string",
+        "options": [
+          {
+            "label": "Frankfurt (EU Central)",
+            "value": "fra1"
+          },
+          {
+            "label": "New York (US East)",
+            "value": "nyc3"
+          },
+          {
+            "label": "San Francisco (US West)",
+            "value": "sfo3"
+          },
+          {
+            "label": "Amsterdam (EU West)",
+            "value": "ams3"
+          }
+        ],
+        "provider": "digitalocean",
+        "required": true,
+        "primitive": "region",
+        "description": "DigitalOcean VPC region"
+      },
+      "redis_password": {
+        "type": "string",
+        "secret": true,
+        "provider": "digitalocean",
+        "required": true,
+        "default": "password",
+        "primitive": "password",
+        "description": "Password for Redis"
+      },
+      "do_access_token": {
+        "type": "string",
+        "secret": true,
+        "default": "",
+        "provider": "digitalocean",
+        "required": false,
+        "primitive": "access_token",
+        "description": "DigitalOcean access token"
+      },
+      "do_project_name": {
+        "type": "string",
+        "default": "lorawan-project",
+        "provider": "digitalocean",
+        "required": false,
+        "primitive": "project",
+        "description": "DigitalOcean project name"
+      },
+      "do_ssh_key_name": {
+        "type": "string",
+        "provider": "digitalocean",
+        "required": true,
+        "default": "to-be-removed",
+        "primitive": "ssh_key_name",
+        "description": "SSH key name"
+      },
+      "do_db_node_count": {
+        "type": "number",
+        "provider": "digitalocean",
+        "required": true,
+        "default": 1,
+        "primitive": "count",
+        "description": "Number of database nodes"
+      },
+      "private_key_path": {
+        "type": "string",
+        "default": "~/.ssh/id_rsa",
+        "provider": "digitalocean",
+        "required": false,
+        "primitive": "file_path",
+        "description": "Path to your private SSH key"
+      },
+      "do_mosquitto_name": {
+        "type": "string",
+        "provider": "digitalocean",
+        "required": true,
+        "default": "lorawan-mosquitto",
+        "primitive": "name",
+        "description": "Name for the Mosquitto droplet"
+      },
+      "do_mosquitto_size": {
+        "type": "string",
+        "options": [
+          {
+            "label": "Basic - 1vCPU / 1GB RAM",
+            "value": "s-1vcpu-1gb"
+          },
+          {
+            "label": "Basic - 1vCPU / 2GB RAM",
+            "value": "s-1vcpu-2gb"
+          },
+          {
+            "label": "Basic - 2vCPU / 2GB RAM",
+            "value": "s-2vcpu-2gb"
+          },
+          {
+            "label": "Premium - 2vCPU / 4GB RAM",
+            "value": "s-2vcpu-4gb"
+          }
+        ],
+        "provider": "digitalocean",
+        "required": true,
+        "primitive": "size",
+        "description": "Size of Mosquitto droplet"
+      },
+      "do_mosquitto_image": {
+        "type": "string",
+        "options": [
+          {
+            "label": "Ubuntu 22.04",
+            "value": "ubuntu-22-04-x64"
+          }
+        ],
+        "provider": "digitalocean",
+        "required": true,
+        "primitive": "image",
+        "description": "Image for Mosquitto droplet"
+      },
+      "redis_droplet_name": {
+        "type": "string",
+        "default": "redis",
+        "provider": "digitalocean",
+        "required": true,
+        "primitive": "name",
+        "description": "Name for Redis droplet"
+      },
+      "redis_droplet_size": {
+        "type": "string",
+        "default": "s-1vcpu-1gb",
+        "options": [
+          {
+            "label": "Basic - 1vCPU / 1GB RAM",
+            "value": "s-1vcpu-1gb"
+          },
+          {
+            "label": "Basic - 1vCPU / 2GB RAM",
+            "value": "s-1vcpu-2gb"
+          },
+          {
+            "label": "Basic - 2vCPU / 2GB RAM",
+            "value": "s-2vcpu-2gb"
+          },
+          {
+            "label": "Premium - 2vCPU / 4GB RAM",
+            "value": "s-2vcpu-4gb"
+          }
+        ],
+        "provider": "digitalocean",
+        "required": true,
+        "primitive": "size",
+        "description": "Size for Redis droplet"
+      },
+      "do_mosquitto_region": {
+        "type": "string",
+        "options": [
+          {
+            "label": "Frankfurt (EU Central)",
+            "value": "fra1"
+          },
+          {
+            "label": "New York (US East)",
+            "value": "nyc3"
+          },
+          {
+            "label": "San Francisco (US West)",
+            "value": "sfo3"
+          },
+          {
+            "label": "Amsterdam (EU West)",
+            "value": "ams3"
+          }
+        ],
+        "provider": "digitalocean",
+        "required": true,
+        "primitive": "region",
+        "description": "Mosquitto region"
+      },
+      "redis_droplet_image": {
+        "type": "string",
+        "default": "ubuntu-22-04-x64",
+        "options": [
+          {
+            "label": "Ubuntu 22.04",
+            "value": "ubuntu-22-04-x64"
+          }
+        ],
+        "provider": "digitalocean",
+        "required": true,
+        "primitive": "image",
+        "description": "Image for Redis droplet"
+      },
+      "do_loadbalancer_name": {
+        "type": "string",
+        "provider": "digitalocean",
+        "required": true,
+        "default": "lorawan-lb",
+        "primitive": "name",
+        "description": "Name of the load balancer"
+      },
+      "do_lorawan_subdomain": {
+        "type": "string",
+        "default": "lorawan",
+        "provider": "digitalocean",
+        "required": true,
+        "primitive": "name",
+        "description": "Lorawan subdomain"
+      },
+      "do_ssh_firewall_name": {
+        "type": "string",
+        "provider": "digitalocean",
+        "required": true,
+        "primitive": "firewall",
+        "description": "Firewall name for SSH access"
+      },
+      "do_mosquitto_password": {
+        "type": "string",
+        "secret": true,
+        "provider": "digitalocean",
+        "default": "password",
+        "required": true,
+        "primitive": "password",
+        "description": "Mosquitto password"
+      },
+      "do_mosquitto_username": {
+        "type": "string",
+        "provider": "digitalocean",
+        "default": "mosquitto-username",
+        "required": true,
+        "primitive": "username",
+        "description": "Mosquitto username"
+      },
+      "do_project_description": {
+        "type": "string",
+        "default": "A Chirpstack setup",
+        "provider": "digitalocean",
+        "required": false,
+        "primitive": "project_description",
+        "description": "DigitalOcean project description"
+      },
+      "do_chirpstack_droplet_size": {
+        "type": "string",
+        "options": [
+          {
+            "label": "Basic - 1vCPU / 1GB RAM",
+            "value": "s-1vcpu-1gb"
+          },
+          {
+            "label": "Basic - 1vCPU / 2GB RAM",
+            "value": "s-1vcpu-2gb"
+          },
+          {
+            "label": "Basic - 2vCPU / 2GB RAM",
+            "value": "s-2vcpu-2gb"
+          },
+          {
+            "label": "Premium - 2vCPU / 4GB RAM",
+            "value": "s-2vcpu-4gb"
+          }
+        ],
+        "provider": "digitalocean",
+        "required": true,
+        "primitive": "size",
+        "description": "ChirpStack droplet size"
+      },
+      "do_mosquitto_firewall_name": {
+        "type": "string",
+        "provider": "digitalocean",
+        "default": "mosquitto-firewall",
+        "required": true,
+        "primitive": "firewall",
+        "description": "Firewall name for Mosquitto"
+      },
+      "do_chirpstack_droplet_count": {
+        "type": "number",
+        "provider": "digitalocean",
+        "required": true,
+        "default": 2,
+        "primitive": "count",
+        "description": "Number of ChirpStack droplets"
+      },
+      "do_chirpstack_droplet_image": {
+        "type": "string",
+        "options": [
+          {
+            "label": "Ubuntu 22.04",
+            "value": "ubuntu-22-04-x64"
+          },
+          {
+            "label": "Ubuntu 20.04",
+            "value": "ubuntu-20-04-x64"
+          },
+          {
+            "label": "Debian 11",
+            "value": "debian-11-x64"
+          },
+          {
+            "label": "CentOS 8",
+            "value": "centos-8-x64"
+          }
+        ],
+        "provider": "digitalocean",
+        "required": true,
+        "primitive": "image",
+        "description": "ChirpStack image"
+      },
+      "do_chirpstack_droplet_region": {
+        "type": "string",
+        "options": [
+          {
+            "label": "Frankfurt (EU Central)",
+            "value": "fra1"
+          },
+          {
+            "label": "New York (US East)",
+            "value": "nyc3"
+          },
+          {
+            "label": "San Francisco (US West)",
+            "value": "sfo3"
+          },
+          {
+            "label": "Amsterdam (EU West)",
+            "value": "ams3"
+          }
+        ],
+        "provider": "digitalocean",
+        "required": true,
+        "primitive": "region",
+        "description": "ChirpStack region"
+      }
     }
   }
 }
