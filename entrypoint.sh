@@ -5,7 +5,7 @@ set -e
 echo "🧠 Generating terraform.tfvars from injected environment variables..."
 
 # Path to where we want to generate the tfvars
-TARGET_DIR="/repo"
+TARGET_DIR="/outputs"
 TFVARS_FILE="$TARGET_DIR/terraform.tfvars"
 
 # Start fresh
@@ -69,19 +69,20 @@ done
 echo "✅ terraform.tfvars generated at $TFVARS_FILE:"
 cat "$TFVARS_FILE"
 
-# Run OpenTofu in the /repo directory
+# Run OpenTofu in the /outputs directory
 echo "🚀 Running OpenTofu..."
 cd "$TARGET_DIR"
-tofu init -backend-config="path=$TARGET_DIR/state/terraform.tfstate"
+tofu init -backend-config="path=$TARGET_DIR/terraform.tfstate"
 tofu plan
-tofu apply -state=$TARGET_DIR/state/terraform.tfstate -auto-approve
+tofu apply -state=$TARGET_DIR/terraform.tfstate -auto-approve
 
 # Extract outputs and send to runner
 echo "📤 Capturing outputs..."
+echo 
 OUTPUT_JSON=$(tofu output -json)
 
-echo "📡 Sending outputs to runner container..."
-echo "$OUTPUT_JSON" | curl --location 'http://host.docker.internal:3030/state/vars' \
-  --header 'Content-Type: application/json' \
-  --data-binary @-
+# echo "📡 Sending outputs to runner container..."
+# echo "$OUTPUT_JSON" | curl --location 'http://host.docker.internal:3030/state/vars' \
+#   --header 'Content-Type: application/json' \
+#   --data-binary @-
 
