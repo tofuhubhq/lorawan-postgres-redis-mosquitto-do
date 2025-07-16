@@ -85,17 +85,26 @@ resource "digitalocean_droplet" "mosquitto" {
   }
   provisioner "remote-exec" {
     inline = [
+      "set -euo pipefail",
       "export DEBIAN_FRONTEND=noninteractive",
-      "apt update -y",
-      "apt install -y mosquitto",
-       # Create password file before Mosquitto reads it
-      "mosquitto_passwd -b -c /etc/mosquitto/passwd ${var.do_mosquitto_username} ${var.do_mosquitto_password}",
 
-      # Add config file to enforce password auth
+      # Retry apt to avoid lock errors
+      "for i in {1..5}; do apt update -y && apt install -y mosquitto && break || sleep 5; done",
+
+      # Ensure mosquitto is installed and its dir exists
+      "[ -d /etc/mosquitto ] || (echo 'Mosquitto dir missing' && exit 1)",
+
+      # Create password file
+      "mosquitto_passwd -b -c /etc/mosquitto/passwd '${var.do_mosquitto_username}' '${var.do_mosquitto_password}'",
+
+      # Add config file for password auth
       "echo 'allow_anonymous false' > /etc/mosquitto/conf.d/auth.conf",
       "echo 'password_file /etc/mosquitto/passwd' >> /etc/mosquitto/conf.d/auth.conf",
-      "systemctl enable mosquitto",
-      "systemctl start mosquitto"
+
+      # Reload or restart Mosquitto cleanly
+      "systemctl daemon-reexec",
+      "systemctl restart mosquitto",
+      "systemctl enable mosquitto"
     ]
   }
 
