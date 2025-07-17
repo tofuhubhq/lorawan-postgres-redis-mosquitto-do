@@ -9,4 +9,5 @@ Deploy a production-ready ChirpStack instance with all its core dependencies usi
 - **Mosquitto (MQTT Broker)** for device uplink/downlink messaging
 - **Load Balancer** for routing external traffic
 
-> ⚡ Deploy to Digital Ocean
+This repository originally targeted DigitalOcean. A new `main_gcp.tf` and accompanying modules
+provide experimental support for deploying the stack on Google Cloud Platform.
