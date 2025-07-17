@@ -192,14 +192,6 @@
         "primitive": "project",
         "description": "DigitalOcean project name"
       },
-      "do_ssh_key_name": {
-        "type": "string",
-        "provider": "digitalocean",
-        "required": true,
-        "default": "to-be-removed",
-        "primitive": "ssh_key_name",
-        "description": "SSH key name"
-      },
       "do_db_node_count": {
         "type": "number",
         "provider": "digitalocean",

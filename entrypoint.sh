@@ -38,7 +38,6 @@ vars=(
   do_chirpstack_droplet_image
   do_chirpstack_droplet_region
   do_chirpstack_firewall_name
-  do_ssh_key_name
   redis_droplet_name
   redis_droplet_size
   redis_droplet_image
