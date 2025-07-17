@@ -45,6 +45,7 @@ vars=(
   redis_region
   redis_password
   do_loadbalancer_name
+  do_loadbalancer_region
   do_lorawan_subdomain
   do_ssh_key_ids
   private_key_path
