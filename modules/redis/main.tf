@@ -52,8 +52,7 @@ resource "digitalocean_droplet" "redis" {
   region = var.redis_region
   size   = var.redis_droplet_size
   image  = var.redis_droplet_image
-  # ssh_keys = var.do_ssh_key_ids
-  ssh_keys = ["49290584"]
+  ssh_keys = var.do_ssh_key_ids
 
   tags     = ["redis", "ssh"]
 

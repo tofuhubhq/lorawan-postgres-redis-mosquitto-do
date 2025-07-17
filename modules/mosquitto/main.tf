@@ -73,8 +73,7 @@ resource "digitalocean_droplet" "mosquitto" {
   region = var.do_mosquitto_region
   size   = var.do_mosquitto_size
   image  = var.do_mosquitto_image
-  # ssh_keys = var.do_ssh_key_ids
-  ssh_keys = ["49290584"]
+  ssh_keys = var.do_ssh_key_ids
 
   tags = ["mosquitto", "ssh"]
 
