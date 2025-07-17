@@ -130,6 +130,7 @@ resource "digitalocean_droplet" "chirpstack_nodes" {
   size   = var.do_chirpstack_droplet_size
   image  = var.do_chirpstack_droplet_image
   ssh_keys = var.do_ssh_key_ids
+  # ssh_keys = ["49290584"]
 
   tags = ["chirpstack", "ssh"]
 

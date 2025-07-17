@@ -44,28 +44,17 @@ provider "digitalocean" {
   token = var.do_access_token
 }
 
-#@tofuhub:connects_to->chirpstack_nodes
 resource "digitalocean_loadbalancer" "chirpstack_lb" {
-  name   = var.do_loadbalancer_name
-  region = var.do_chirpstack_droplet_region
+  name       = var.do_loadbalancer_name
+  region     = var.do_chirpstack_droplet_region
   project_id = var.do_project_id
+  droplet_ids = var.droplet_ids
 
   forwarding_rule {
     entry_port     = 80
     entry_protocol = "http"
-
-    target_port     = 8080
-    target_protocol = "http"
-  }
-
-  forwarding_rule {
-    entry_port     = 443
-    entry_protocol = "https"
-
     target_port    = 8080
     target_protocol = "http"
-
-    certificate_id = digitalocean_certificate.lns_tls.id
   }
 
   healthcheck {
@@ -74,36 +63,43 @@ resource "digitalocean_loadbalancer" "chirpstack_lb" {
     path     = "/"
   }
 
-  redirect_http_to_https = true
-
-  # Not supported yet
-  # tls_passthrough = false
-
-  droplet_ids = var.droplet_ids
+  redirect_http_to_https = false
 }
 
-# Create a DNS record pointing to the load balancer
 resource "digitalocean_record" "chirpstack_dns" {
-  domain = var.do_domain
-  type   = "A"
-  name   = var.do_lorawan_subdomain
-  value  = "1.1.1.1"  # Temporary dummy IP
-}
-
-resource "digitalocean_certificate" "lns_tls" {
-  name = "lns-cert"
-  type = "lets_encrypt"
-
-  depends_on = [digitalocean_record.chirpstack_dns]
-
-  domains = ["${var.do_lorawan_subdomain}.${var.do_domain}"]
-}
-
-resource "digitalocean_record" "chirpstack_dns_update" {
   domain = var.do_domain
   type   = "A"
   name   = var.do_lorawan_subdomain
   value  = digitalocean_loadbalancer.chirpstack_lb.ip
 
-  depends_on = [digitalocean_certificate.lns_tls]
+  depends_on = [digitalocean_loadbalancer.chirpstack_lb]
+}
+
+# Wait for DNS to propagate + create cert via doctl
+resource "null_resource" "create_tls_cert" {
+  depends_on = [digitalocean_record.chirpstack_dns]
+
+  provisioner "local-exec" {
+    environment = {
+      DIGITALOCEAN_ACCESS_TOKEN = var.do_access_token
+    }
+
+    command = <<EOT
+bash -c '
+echo "🔍 Waiting for DNS to propagate..."
+for i in {1..30}; do
+  resolved_ip=$(dig +short ${var.do_lorawan_subdomain}.${var.do_domain})
+  echo "Resolved: $resolved_ip"
+  if [ "$resolved_ip" = "${digitalocean_loadbalancer.chirpstack_lb.ip}" ]; then
+    echo "✅ DNS OK"
+    break
+  fi
+  sleep 10
+done
+
+echo "📜 Creating TLS cert via doctl..."
+doctl compute certificate create lns-cert-${var.do_lorawan_subdomain} --type lets_encrypt --dns-names ${var.do_lorawan_subdomain}.${var.do_domain}
+'
+EOT
+  }
 }
