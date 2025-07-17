@@ -130,6 +130,22 @@ REGION="${digitalocean_loadbalancer.chirpstack_lb.region}"
 DROPLET_IDS="${join(",", var.droplet_ids)}"
 CERT_ID=$(doctl compute certificate list --format ID,Name | grep lns-cert-${var.do_lorawan_subdomain} | awk '"'"'{print $1}'"'"')
 
+# Retry loop to wait until cert is usable
+for i in {1..10}; do
+  CERT_ID=$(doctl compute certificate list --format ID,Name,State | grep "$CERT_NAME" | awk '"'"'$3 == "verified" {print $1}'"'"')
+  if [ -n "$CERT_ID" ]; then
+    echo "✅ Found verified certificate: $CERT_ID"
+    break
+  fi
+  echo "⏳ Waiting for certificate to be ready... ($i/10)"
+  sleep 5
+done
+
+if [ -z "$CERT_ID" ]; then
+  echo "❌ Certificate '$CERT_NAME' not found or not verified"
+  exit 1
+fi
+
 echo "📄 Using cert ID: $CERT_ID"
 echo "📦 Updating load balancer..."
 
