@@ -1,12 +1,12 @@
-# 🛰️ ChirpStack Full Stack Deployment
+# 🛰️ ChirpStack Full Stack Deployment on Google Cloud
 
-Deploy a production-ready ChirpStack instance with all its core dependencies using OpenTofu. This package includes:
+This project contains OpenTofu configurations to deploy a full ChirpStack stack on **Google Cloud Platform (GCP)**. The deployment includes:
 
 - **ChirpStack Network Server**
 - **ChirpStack Application Server**
-- **PostgreSQL** for persistent storage
-- **Redis** for stream and device session caching
-- **Mosquitto (MQTT Broker)** for device uplink/downlink messaging
-- **Load Balancer** for routing external traffic
+- **PostgreSQL** backed by Cloud SQL
+- **Redis** using Memorystore
+- **Mosquitto** MQTT broker on a Compute Instance
+- **HTTP Load Balancer**
 
-> ⚡ Deploy to Digital Ocean
+The legacy DigitalOcean configuration is still available in `main.tf`. To deploy on GCP use the `gcp_main.tf` entry point and provide the required variables.
