@@ -10,3 +10,7 @@ Deploy a production-ready ChirpStack instance with all its core dependencies usi
 - **Load Balancer** for routing external traffic
 
 > ⚡ Deploy to Digital Ocean
+
+## 🚀 Deploy to Google Cloud Platform
+
+A new `main_gcp.tf` configuration and accompanying modules allow deploying the same stack on GCP. Configure your project ID, region and zone along with the machine sizes and credentials, then run `tofu init && tofu apply` in the repository root.
